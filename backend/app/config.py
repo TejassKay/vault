@@ -14,7 +14,15 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
 
     # Database
-    DATABASE_URL: str = "postgresql://postgres:postgres@localhost:5432/vault"
+    DATABASE_URL: str = "postgresql+psycopg2://postgres:postgres@localhost:5432/vault"
+
+    @property
+    def sync_database_url(self) -> str:
+        """Ensure standard postgresql:// URLs use psycopg2 driver."""
+        url = self.DATABASE_URL
+        if url.startswith("postgresql://"):
+            return url.replace("postgresql://", "postgresql+psycopg2://", 1)
+        return url
 
     # Auth & Security
     JWT_SECRET: str = "dev-secret-change-in-production-vault-2026"
