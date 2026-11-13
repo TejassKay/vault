@@ -1,0 +1,11 @@
+Product: Samsung AC 1.5 Ton
+Brand: Samsung
+Model No.: AR18BYNYBWK
+Sold by: Reliance Digital
+Date: 15/06/2026
+Invoice Date: 15/06/2026
+Category: AC
+Total: Rs. 42,500
+Price: 42500
+Warranty: 1 year
+
