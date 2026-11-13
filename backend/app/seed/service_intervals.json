@@ -1,0 +1,39 @@
+[
+  {
+    "name": "AC",
+    "interval_months": 6,
+    "tips": "Clean or replace air filters every 1-2 months during high use. Schedule deep coil and coolant service every 6 months.",
+    "guidance_source": "general"
+  },
+  {
+    "name": "Refrigerator",
+    "interval_months": 12,
+    "tips": "Clean condenser coils annually. Inspect door gaskets for tight seal to optimize power usage.",
+    "guidance_source": "general"
+  },
+  {
+    "name": "Washing Machine",
+    "interval_months": 12,
+    "tips": "Run a hot water descaling cycle monthly. Clean inlet filters and inspect drum balance annually.",
+    "guidance_source": "general"
+  },
+  {
+    "name": "RO Purifier",
+    "interval_months": 6,
+    "tips": "Replace sediment and carbon filters every 6 months. Check TDS and membrane health regularly.",
+    "guidance_source": "general"
+  },
+  {
+    "name": "Geyser",
+    "interval_months": 12,
+    "tips": "Flush water tank and descale heating element annually. Check pressure relief valve safety.",
+    "guidance_source": "general"
+  },
+  {
+    "name": "Chimney",
+    "interval_months": 6,
+    "tips": "Degrease baffle/mesh filters monthly. Schedule professional duct cleaning every 6 months.",
+    "guidance_source": "general"
+  }
+]
+
