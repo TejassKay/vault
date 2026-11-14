@@ -63,7 +63,7 @@ jobs:
           JWT_SECRET: test-secret-ci-key-vault-2026
           PYTHONPATH: backend
         run: |
-          pytest backend/tests -v
+          cd backend && pytest --cov=app/engines --cov-report=term-missing tests/ -v
 
   frontend:
     name: Frontend (Lint, Test & Build)
