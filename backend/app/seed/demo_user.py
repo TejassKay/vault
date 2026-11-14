@@ -7,6 +7,7 @@ from decimal import Decimal
 
 from sqlalchemy.orm import Session
 
+from app.core.database import Base, SessionLocal, engine
 from app.core.security import hash_password
 from app.models.appliance import Appliance, ApplianceCategory
 from app.models.goal import Goal
@@ -15,6 +16,7 @@ from app.models.income_source import IncomeSource
 from app.models.liability import Liability
 from app.models.transaction import Transaction
 from app.models.user import User
+from app.seed.seed_intervals import seed_service_intervals
 
 DEMO_USER_EMAIL = "demo@vault.local"
 
@@ -184,6 +186,10 @@ def seed_demo_user(db: Session, scenario: str = "A") -> User:
 
     # 6. Appliance if category exists
     cat = db.query(ApplianceCategory).first()
+    if not cat:
+        seed_service_intervals(db)
+        cat = db.query(ApplianceCategory).first()
+
     if cat:
         existing_app = db.query(Appliance).filter(Appliance.user_id == uid).first()
         if not existing_app:
@@ -206,3 +212,25 @@ def seed_demo_user(db: Session, scenario: str = "A") -> User:
     db.commit()
     db.refresh(user)
     return user
+
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Seed demo user data according to Spec 6.6.")
+    parser.add_argument(
+        "--scenario",
+        type=str,
+        default="A",
+        help="Golden scenario to seed: A or B (default: A)",
+    )
+    args = parser.parse_args()
+    scenario = args.scenario.upper()
+
+    # Ensure tables exist on an empty database
+    Base.metadata.create_all(bind=engine)
+
+    with SessionLocal() as session:
+        seed_service_intervals(session)
+        user = seed_demo_user(session, scenario=scenario)
+        print(f"Demo user '{user.email}' seeded successfully for Scenario {scenario}.")
