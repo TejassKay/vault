@@ -8,10 +8,12 @@ import {
   Target,
   Sparkles,
   Activity,
+  Compass,
 } from 'lucide-react';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
+  { name: 'Onboarding', href: '/onboarding', icon: Compass },
   { name: 'Assets & Bills', href: '/assets', icon: Receipt },
   { name: 'Finances', href: '/finances', icon: WalletCards },
   { name: 'Goals', href: '/goals', icon: Target },

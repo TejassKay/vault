@@ -7,6 +7,8 @@ describe('App Component (NFR-5, NFR-6)', () => {
     render(<App />);
     expect(screen.getByText('VAULT')).toBeInTheDocument();
     expect(screen.getByText('Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Onboarding')).toBeInTheDocument();
+    expect(screen.getByText('Advisor')).toBeInTheDocument();
     expect(screen.getByText('System Health')).toBeInTheDocument();
   });
 
