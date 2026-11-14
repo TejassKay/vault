@@ -15,6 +15,9 @@ import {
   fetchSnapshot,
   fetchTransactions,
 } from '../api/finances';
+import Money from '../components/Money';
+import Card from '../components/Card';
+import StatusPill from '../components/StatusPill';
 
 export const Finances: React.FC = () => {
   const [snapshot, setSnapshot] = useState<FinancialSnapshot | null>(null);
@@ -71,8 +74,6 @@ export const Finances: React.FC = () => {
       } else {
         setError('Failed to load financial records');
       }
-    } finally {
-      // loaded
     }
   };
 
@@ -82,7 +83,7 @@ export const Finances: React.FC = () => {
 
   const handleAddTxn = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!txnAmount) return;
+    if (!txnAmount || !txnCategory) return;
     try {
       const res = await createTransaction({
         type: txnType,
@@ -91,10 +92,10 @@ export const Finances: React.FC = () => {
         txn_date: txnDate,
         is_recurring: false,
       });
+      setTxnAmount('');
       if (res.nudge?.message) {
         setNudgeMessage(res.nudge.message);
       }
-      setTxnAmount('');
       await loadAll();
     } catch (err: unknown) {
       if (err instanceof Error) setError(err.message);
@@ -109,7 +110,7 @@ export const Finances: React.FC = () => {
         name: incName,
         amount: parseFloat(incAmount),
         frequency: incFrequency,
-        income_type: 'fixed',
+        income_type: 'salary',
         is_active: true,
       });
       setIncName('');
@@ -128,7 +129,7 @@ export const Finances: React.FC = () => {
         type: liabType,
         lender_name: liabLender || null,
         outstanding_principal: parseFloat(liabPrincipal),
-        interest_rate: parseFloat(liabRate || '10.0'),
+        interest_rate: liabRate ? parseFloat(liabRate) : 10.0,
         emi_amount: parseFloat(liabEmi),
         due_day: parseInt(liabDueDay, 10),
         status: 'active',
@@ -165,106 +166,132 @@ export const Finances: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Financial Core</h1>
-        <p className="text-sm text-slate-500">
-          Track income, expenses, debts, holdings, and view deterministic financial metrics.
-        </p>
+    <div className="max-w-7xl mx-auto space-y-6 pb-12">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-4">
+        <div>
+          <h1 className="text-3xl font-serif text-ink tracking-tight">Financial Ledger Core</h1>
+          <p className="text-xs font-sans text-muted-ink mt-0.5">
+            Archival records of income flows, expenditures, obligations, and capital reserves
+          </p>
+        </div>
       </div>
 
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+        <div className="p-4 bg-surface border border-liability text-liability rounded-sm text-xs font-sans">
           {error}
         </div>
       )}
 
       {nudgeMessage && (
-        <div className="p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg text-sm flex justify-between items-center">
-          <span>💡 <strong>Budgeting Nudge:</strong> {nudgeMessage}</span>
-          <button onClick={() => setNudgeMessage(null)} className="text-xs text-amber-700 hover:text-amber-900">
+        <div className="p-3.5 bg-surface border-l-4 border-gold border border-border text-ink rounded-sm text-xs flex justify-between items-center">
+          <span>
+            <strong className="font-mono text-ink uppercase tracking-wide mr-2">Budgeting Nudge:</strong>
+            {nudgeMessage}
+          </span>
+          <button
+            onClick={() => setNudgeMessage(null)}
+            className="text-xs font-mono text-muted-ink hover:text-ink ml-4"
+          >
             Dismiss
           </button>
         </div>
       )}
 
-      {/* Snapshot Cards */}
+      {/* Snapshot Ledger Header Cards */}
       {snapshot && (
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold text-slate-900">Financial Health Snapshot</h2>
+        <Card className="space-y-4">
+          <div className="flex justify-between items-center border-b border-border pb-3">
+            <h2 className="text-xl font-serif text-ink">Ledger Snapshot & Computed Core</h2>
             {snapshot.is_stale && (
-              <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                Stale Data Indicator
-              </span>
+              <StatusPill label="STALE DATA RECORD" variant="liability" />
             )}
           </div>
 
           {!snapshot.is_sufficient ? (
-            <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-600">
-              <span className="font-semibold text-slate-800">Insufficient Data:</span> Please provide{' '}
+            <div className="p-4 bg-canvas border border-border rounded-sm text-xs text-muted-ink">
+              <span className="font-medium text-ink">Insufficient Data:</span> Please record{' '}
               {snapshot.missing_items.join(' and ')} to compute accurate metrics.
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                <div className="text-xs text-slate-500 font-medium">Monthly Income</div>
-                <div className="text-lg font-bold text-slate-900 mt-1">
-                  ₹{Number(snapshot.monthly_income).toLocaleString('en-IN')}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              <div className="p-3 bg-canvas rounded-sm border border-border">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-muted-ink block">
+                  Monthly Income
+                </span>
+                <div className="text-lg font-mono font-medium text-ink mt-1">
+                  <Money amount={snapshot.monthly_income} />
                 </div>
               </div>
 
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                <div className="text-xs text-slate-500 font-medium">Net Cash Flow</div>
-                <div className={`text-lg font-bold mt-1 ${snapshot.net_cash_flow >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                  ₹{Number(snapshot.net_cash_flow).toLocaleString('en-IN')}
+              <div className="p-3 bg-canvas rounded-sm border border-border">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-muted-ink block">
+                  Net Cash Flow
+                </span>
+                <div className="text-lg font-mono font-medium mt-1">
+                  <Money amount={snapshot.net_cash_flow} showSign />
                 </div>
               </div>
 
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                <div className="text-xs text-slate-500 font-medium">Savings Rate</div>
-                <div className="text-lg font-bold text-indigo-600 mt-1">
+              <div className="p-3 bg-canvas rounded-sm border border-border">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-muted-ink block">
+                  Savings Rate
+                </span>
+                <div className="text-lg font-mono font-medium text-ink mt-1">
                   {snapshot.savings_rate}%
                 </div>
               </div>
 
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                <div className="text-xs text-slate-500 font-medium">DTI Ratio</div>
-                <div className="text-lg font-bold text-slate-900 mt-1">
-                  {snapshot.dti}% <span className="text-xs font-normal text-slate-400">({snapshot.dti_level})</span>
+              <div className="p-3 bg-canvas rounded-sm border border-border">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-muted-ink block">
+                  DTI Ratio
+                </span>
+                <div className="text-lg font-mono font-medium text-ink mt-1">
+                  {snapshot.dti}%
+                </div>
+                <span className="text-[10px] font-mono text-muted-ink block uppercase">
+                  {snapshot.dti_level}
+                </span>
+              </div>
+
+              <div className="p-3 bg-canvas rounded-sm border border-border">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-muted-ink block">
+                  Net Worth
+                </span>
+                <div className="text-lg font-mono font-medium text-ink mt-1">
+                  <Money amount={snapshot.net_worth} />
                 </div>
               </div>
 
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                <div className="text-xs text-slate-500 font-medium">Net Worth</div>
-                <div className="text-lg font-bold text-slate-900 mt-1">
-                  ₹{Number(snapshot.net_worth).toLocaleString('en-IN')}
-                </div>
-              </div>
-
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                <div className="text-xs text-slate-500 font-medium">Emergency Fund</div>
-                <div className="text-lg font-bold text-slate-900 mt-1">
-                  {snapshot.emergency_coverage_months} <span className="text-xs font-normal text-slate-400">mo</span>
+              <div className="p-3 bg-canvas rounded-sm border border-border">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-muted-ink block">
+                  Emergency Fund
+                </span>
+                <div className="text-lg font-mono font-medium text-ink mt-1">
+                  {snapshot.emergency_coverage_months}{' '}
+                  <span className="text-xs font-sans text-muted-ink">mo</span>
                 </div>
               </div>
             </div>
           )}
-        </div>
+        </Card>
       )}
 
-      {/* Grid of Forms & Records */}
+      {/* Grid of Forms & Records: Archival tables with tabular-nums and right-aligned numbers */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Income Sources (FR-15) */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 space-y-4">
-          <h3 className="font-semibold text-slate-900">Income Sources ({incomeSources.length})</h3>
+        <Card className="space-y-4">
+          <div className="border-b border-border pb-3 flex justify-between items-center">
+            <h3 className="text-lg font-serif text-ink">Income Sources ({incomeSources.length})</h3>
+            <span className="text-[10px] font-mono text-muted-ink uppercase">FR-15</span>
+          </div>
+
           <form onSubmit={handleAddIncome} className="flex gap-2">
             <input
               type="text"
               placeholder="Source Name"
               value={incName}
               onChange={(e) => setIncName(e.target.value)}
-              className="text-xs p-2 border border-slate-300 rounded flex-1"
+              className="text-xs font-sans p-2 border border-border rounded-sm bg-surface flex-1 focus:border-ink"
               required
             />
             <input
@@ -272,40 +299,71 @@ export const Finances: React.FC = () => {
               placeholder="Amount (₹)"
               value={incAmount}
               onChange={(e) => setIncAmount(e.target.value)}
-              className="text-xs p-2 border border-slate-300 rounded w-28"
+              className="text-xs font-mono p-2 border border-border rounded-sm bg-surface w-28 focus:border-ink"
               required
             />
             <select
               value={incFrequency}
               onChange={(e) => setIncFrequency(e.target.value)}
-              className="text-xs p-2 border border-slate-300 rounded"
+              className="text-xs font-sans p-2 border border-border rounded-sm bg-surface focus:border-ink"
             >
               <option value="monthly">Monthly</option>
               <option value="weekly">Weekly</option>
               <option value="yearly">Yearly</option>
             </select>
-            <button type="submit" className="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs">
+            <button
+              type="submit"
+              className="px-3 py-1 bg-ink hover:bg-muted-ink text-canvas rounded-sm text-xs font-mono transition-colors"
+            >
               Add
             </button>
           </form>
-          <div className="max-h-48 overflow-y-auto divide-y divide-slate-100 text-xs">
-            {incomeSources.map((s) => (
-              <div key={s.income_source_id} className="py-2 flex justify-between">
-                <span className="font-medium text-slate-800">{s.name} ({s.frequency})</span>
-                <span className="font-semibold text-slate-900">₹{Number(s.amount).toLocaleString('en-IN')}</span>
-              </div>
-            ))}
-          </div>
-        </div>
 
-        {/* Transactions */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 space-y-4">
-          <h3 className="font-semibold text-slate-900">Record Transaction</h3>
+          {/* Table */}
+          <div className="max-h-56 overflow-y-auto border border-border rounded-sm bg-canvas">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="border-b border-border bg-surface text-[10px] font-mono text-muted-ink uppercase">
+                  <th className="p-2.5 font-normal">Source</th>
+                  <th className="p-2.5 font-normal">Frequency</th>
+                  <th className="p-2.5 font-normal text-right">Amount</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {incomeSources.length === 0 ? (
+                  <tr>
+                    <td colSpan={3} className="p-4 text-center text-muted-ink font-sans">
+                      No income sources logged.
+                    </td>
+                  </tr>
+                ) : (
+                  incomeSources.map((s) => (
+                    <tr key={s.income_source_id} className="hover:bg-surface/50">
+                      <td className="p-2.5 font-sans font-medium text-ink">{s.name}</td>
+                      <td className="p-2.5 font-mono text-[11px] text-muted-ink capitalize">{s.frequency}</td>
+                      <td className="p-2.5 font-mono text-right text-ink">
+                        <Money amount={s.amount} />
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+
+        {/* Transactions (FR-7) */}
+        <Card className="space-y-4">
+          <div className="border-b border-border pb-3 flex justify-between items-center">
+            <h3 className="text-lg font-serif text-ink">Record Transaction ({transactions.length})</h3>
+            <span className="text-[10px] font-mono text-muted-ink uppercase">FR-7</span>
+          </div>
+
           <form onSubmit={handleAddTxn} className="flex gap-2">
             <select
               value={txnType}
               onChange={(e) => setTxnType(e.target.value)}
-              className="text-xs p-2 border border-slate-300 rounded"
+              className="text-xs font-sans p-2 border border-border rounded-sm bg-surface focus:border-ink"
             >
               <option value="expense">Expense</option>
               <option value="income">Income</option>
@@ -315,7 +373,7 @@ export const Finances: React.FC = () => {
               placeholder="Amount"
               value={txnAmount}
               onChange={(e) => setTxnAmount(e.target.value)}
-              className="text-xs p-2 border border-slate-300 rounded w-24"
+              className="text-xs font-mono p-2 border border-border rounded-sm bg-surface w-24 focus:border-ink"
               required
             />
             <input
@@ -323,42 +381,81 @@ export const Finances: React.FC = () => {
               placeholder="Category"
               value={txnCategory}
               onChange={(e) => setTxnCategory(e.target.value)}
-              className="text-xs p-2 border border-slate-300 rounded flex-1"
+              className="text-xs font-sans p-2 border border-border rounded-sm bg-surface flex-1 focus:border-ink"
               required
             />
-            <button type="submit" className="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs">
+            <button
+              type="submit"
+              className="px-3 py-1 bg-ink hover:bg-muted-ink text-canvas rounded-sm text-xs font-mono transition-colors"
+            >
               Record
             </button>
           </form>
-          <div className="max-h-48 overflow-y-auto divide-y divide-slate-100 text-xs">
-            {transactions.slice(0, 5).map((t) => (
-              <div key={t.transaction_id} className="py-2 flex justify-between">
-                <span>{t.category} ({t.txn_date})</span>
-                <span className={t.type === 'income' ? 'text-emerald-600 font-semibold' : 'text-slate-800'}>
-                  ₹{Number(t.amount).toLocaleString('en-IN')}
-                </span>
-              </div>
-            ))}
+
+          {/* Table */}
+          <div className="max-h-56 overflow-y-auto border border-border rounded-sm bg-canvas">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="border-b border-border bg-surface text-[10px] font-mono text-muted-ink uppercase">
+                  <th className="p-2.5 font-normal">Date</th>
+                  <th className="p-2.5 font-normal">Category</th>
+                  <th className="p-2.5 font-normal">Type</th>
+                  <th className="p-2.5 font-normal text-right">Amount</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {transactions.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="p-4 text-center text-muted-ink font-sans">
+                      No transactions recorded.
+                    </td>
+                  </tr>
+                ) : (
+                  transactions.slice(0, 10).map((t) => (
+                    <tr key={t.transaction_id} className="hover:bg-surface/50">
+                      <td className="p-2.5 font-mono text-[11px] text-muted-ink">{t.txn_date}</td>
+                      <td className="p-2.5 font-sans font-medium text-ink">{t.category}</td>
+                      <td className="p-2.5">
+                        <StatusPill
+                          label={t.type}
+                          variant={t.type === 'income' ? 'growth' : 'neutral'}
+                        />
+                      </td>
+                      <td className="p-2.5 font-mono text-right">
+                        <Money
+                          amount={t.type === 'expense' ? -Math.abs(Number(t.amount)) : Number(t.amount)}
+                          showSign
+                        />
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
-        </div>
+        </Card>
 
         {/* Liabilities / Loans (FR-16) */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 space-y-4">
-          <h3 className="font-semibold text-slate-900">Liabilities & EMIs ({liabilities.length})</h3>
+        <Card className="space-y-4">
+          <div className="border-b border-border pb-3 flex justify-between items-center">
+            <h3 className="text-lg font-serif text-ink">Liabilities & EMIs ({liabilities.length})</h3>
+            <span className="text-[10px] font-mono text-muted-ink uppercase">FR-16</span>
+          </div>
+
           <form onSubmit={handleAddLiability} className="grid grid-cols-3 gap-2">
             <input
               type="text"
-              placeholder="Lender"
+              placeholder="Lender / Note"
               value={liabLender}
               onChange={(e) => setLiabLender(e.target.value)}
-              className="text-xs p-2 border border-slate-300 rounded"
+              className="text-xs font-sans p-2 border border-border rounded-sm bg-surface focus:border-ink"
             />
             <input
               type="number"
               placeholder="Principal (₹)"
               value={liabPrincipal}
               onChange={(e) => setLiabPrincipal(e.target.value)}
-              className="text-xs p-2 border border-slate-300 rounded"
+              className="text-xs font-mono p-2 border border-border rounded-sm bg-surface focus:border-ink"
               required
             />
             <input
@@ -366,33 +463,70 @@ export const Finances: React.FC = () => {
               placeholder="EMI (₹)"
               value={liabEmi}
               onChange={(e) => setLiabEmi(e.target.value)}
-              className="text-xs p-2 border border-slate-300 rounded"
+              className="text-xs font-mono p-2 border border-border rounded-sm bg-surface focus:border-ink"
               required
             />
-            <button type="submit" className="col-span-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs">
-              Add Liability
+            <button
+              type="submit"
+              className="col-span-3 py-1.5 bg-ink hover:bg-muted-ink text-canvas rounded-sm text-xs font-mono transition-colors"
+            >
+              Log Liability
             </button>
           </form>
-          <div className="max-h-48 overflow-y-auto divide-y divide-slate-100 text-xs">
-            {liabilities.map((l) => (
-              <div key={l.liability_id} className="py-2 flex justify-between">
-                <span>{l.lender_name || l.type} (EMI Due day: {l.due_day})</span>
-                <span className="font-semibold text-red-600">EMI: ₹{Number(l.emi_amount).toLocaleString('en-IN')}</span>
-              </div>
-            ))}
+
+          {/* Table */}
+          <div className="max-h-56 overflow-y-auto border border-border rounded-sm bg-canvas">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="border-b border-border bg-surface text-[10px] font-mono text-muted-ink uppercase">
+                  <th className="p-2.5 font-normal">Lender / Type</th>
+                  <th className="p-2.5 font-normal">Due Day</th>
+                  <th className="p-2.5 font-normal text-right">Principal</th>
+                  <th className="p-2.5 font-normal text-right">EMI</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {liabilities.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="p-4 text-center text-muted-ink font-sans">
+                      No liabilities logged.
+                    </td>
+                  </tr>
+                ) : (
+                  liabilities.map((l) => (
+                    <tr key={l.liability_id} className="hover:bg-surface/50">
+                      <td className="p-2.5 font-sans font-medium text-ink">
+                        {l.lender_name || l.type}
+                      </td>
+                      <td className="p-2.5 font-mono text-[11px] text-muted-ink">Day {l.due_day}</td>
+                      <td className="p-2.5 font-mono text-right text-muted-ink">
+                        <Money amount={l.outstanding_principal} />
+                      </td>
+                      <td className="p-2.5 font-mono text-right font-medium text-liability">
+                        <Money amount={l.emi_amount} />
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
-        </div>
+        </Card>
 
         {/* Financial Holdings (FR-17) */}
-        <div className="bg-white p-5 rounded-xl border border-slate-200 space-y-4">
-          <h3 className="font-semibold text-slate-900">Financial Holdings ({holdings.length})</h3>
+        <Card className="space-y-4">
+          <div className="border-b border-border pb-3 flex justify-between items-center">
+            <h3 className="text-lg font-serif text-ink">Financial Holdings ({holdings.length})</h3>
+            <span className="text-[10px] font-mono text-muted-ink uppercase">FR-17</span>
+          </div>
+
           <form onSubmit={handleAddHolding} className="grid grid-cols-2 gap-2">
             <input
               type="text"
-              placeholder="Asset Name (e.g. FD, Savings)"
+              placeholder="Asset Name (FD, Savings, etc.)"
               value={holdName}
               onChange={(e) => setHoldName(e.target.value)}
-              className="text-xs p-2 border border-slate-300 rounded"
+              className="text-xs font-sans p-2 border border-border rounded-sm bg-surface focus:border-ink"
               required
             />
             <input
@@ -400,31 +534,67 @@ export const Finances: React.FC = () => {
               placeholder="Current Value (₹)"
               value={holdValue}
               onChange={(e) => setHoldValue(e.target.value)}
-              className="text-xs p-2 border border-slate-300 rounded"
+              className="text-xs font-mono p-2 border border-border rounded-sm bg-surface focus:border-ink"
               required
             />
-            <label className="text-xs flex items-center gap-1 col-span-2">
+            <label className="text-xs font-sans flex items-center gap-1.5 col-span-2 text-muted-ink">
               <input
                 type="checkbox"
                 checked={holdReserve}
                 onChange={(e) => setHoldReserve(e.target.checked)}
+                className="rounded-xs border-border"
               />
-              Mark as Emergency Reserve Fund
+              Designate as Emergency Reserve Fund
             </label>
-            <button type="submit" className="col-span-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded text-xs">
+            <button
+              type="submit"
+              className="col-span-2 py-1.5 bg-ink hover:bg-muted-ink text-canvas rounded-sm text-xs font-mono transition-colors"
+            >
               Add Holding
             </button>
           </form>
-          <div className="max-h-48 overflow-y-auto divide-y divide-slate-100 text-xs">
-            {holdings.map((h) => (
-              <div key={h.holding_id} className="py-2 flex justify-between">
-                <span>{h.name} {h.is_emergency_reserve && <span className="text-[10px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">Reserve</span>}</span>
-                <span className="font-semibold text-slate-900">₹{Number(h.current_value).toLocaleString('en-IN')}</span>
-              </div>
-            ))}
+
+          {/* Table */}
+          <div className="max-h-56 overflow-y-auto border border-border rounded-sm bg-canvas">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="border-b border-border bg-surface text-[10px] font-mono text-muted-ink uppercase">
+                  <th className="p-2.5 font-normal">Holding</th>
+                  <th className="p-2.5 font-normal">Role</th>
+                  <th className="p-2.5 font-normal text-right">Current Value</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {holdings.length === 0 ? (
+                  <tr>
+                    <td colSpan={3} className="p-4 text-center text-muted-ink font-sans">
+                      No holdings logged.
+                    </td>
+                  </tr>
+                ) : (
+                  holdings.map((h) => (
+                    <tr key={h.holding_id} className="hover:bg-surface/50">
+                      <td className="p-2.5 font-sans font-medium text-ink">{h.name}</td>
+                      <td className="p-2.5">
+                        {h.is_emergency_reserve ? (
+                          <StatusPill label="RESERVE" variant="growth" />
+                        ) : (
+                          <span className="text-[11px] font-mono text-muted-ink">General</span>
+                        )}
+                      </td>
+                      <td className="p-2.5 font-mono text-right text-ink font-medium">
+                        <Money amount={h.current_value} />
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );
 };
+
+export default Finances;
