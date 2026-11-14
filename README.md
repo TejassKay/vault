@@ -103,8 +103,8 @@ source .venv/bin/activate
 ruff check backend/
 ruff format --check backend/
 
-# 2. Run unit tests with Pytest
-pytest backend/tests -v
+# 2. Run unit & integration tests with Pytest and engine coverage verification
+cd backend && pytest --cov=app/engines --cov-report=term-missing tests/
 ```
 
 ### Frontend Linting, Tests & Build
