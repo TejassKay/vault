@@ -49,7 +49,7 @@ def confirm_appliance(
     if not category:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Appliance category {data.category_id} not found.",
+            detail="Appliance category not found.",
         )
 
     today = date.today()

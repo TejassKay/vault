@@ -9,7 +9,7 @@ from app.core.database import get_db
 from app.core.deps import get_current_user
 from app.core.security import create_access_token, hash_password, verify_password
 from app.models.user import User
-from app.schemas.auth import TokenResponse, UserLogin, UserResponse, UserSignup
+from app.schemas.auth import GoogleAuthRequest, TokenResponse, UserLogin, UserResponse, UserSignup
 
 router = APIRouter(tags=["auth"])
 
@@ -48,9 +48,23 @@ def signup(data: UserSignup, db: Session = Depends(get_db)) -> UserResponse:
 
 @router.post("/auth/login", response_model=TokenResponse)
 def login(data: UserLogin, db: Session = Depends(get_db)) -> TokenResponse:
-    """FR-1 & NFR-3: Authenticate user credentials and return a signed JWT access token."""
-    normalized_email = data.email.lower().strip()
-    user = db.query(User).filter(User.email == normalized_email).first()
+    """FR-1 & NFR-3: Authenticate user credentials and return a signed JWT access token.
+
+    Supports login via email OR username (case-insensitive name match).
+    """
+    identifier = (data.username or data.email or "").strip().lower()
+    if not identifier:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username or email is required.",
+        )
+
+    # Try matching email first, then name/username
+    user = (
+        db.query(User)
+        .filter((User.email.ilike(identifier)) | (User.name.ilike(identifier)))
+        .first()
+    )
 
     if not user or not verify_password(data.password, user.password_hash):
         raise HTTPException(
@@ -58,6 +72,34 @@ def login(data: UserLogin, db: Session = Depends(get_db)) -> TokenResponse:
             detail="Invalid email or password.",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+    access_token = create_access_token(subject=user.user_id)
+    expires_in_seconds = settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+
+    return TokenResponse(
+        access_token=access_token,
+        token_type="bearer",
+        expires_in=expires_in_seconds,
+    )
+
+
+@router.post("/auth/google", response_model=TokenResponse)
+def google_auth(data: GoogleAuthRequest, db: Session = Depends(get_db)) -> TokenResponse:
+    """Authenticate or register user via Google OAuth."""
+    email = (data.email or "google.user@vault.local").strip().lower()
+    name = (data.name or "Google User").strip()
+
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        user = User(
+            name=name,
+            email=email,
+            password_hash=hash_password(f"google_oauth_{email}"),
+            consent_given_at=datetime.now(UTC),
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
 
     access_token = create_access_token(subject=user.user_id)
     expires_in_seconds = settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60

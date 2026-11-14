@@ -31,6 +31,7 @@ import {
   submitRiskProfile,
   updateRecommendationStatus,
 } from '../api/advisor';
+import { getLabel } from '../lib/labels.js';
 
 function formatCurrency(val: number | null | undefined): string {
   if (val === null || val === undefined) return '—';
@@ -220,7 +221,7 @@ export const Advisor: React.FC = () => {
             <AlertTriangle className="w-6 h-6 text-orange-600 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <h3 className="text-base font-bold text-orange-950">
-                Insufficient Baseline Financial Data (FR-29)
+                Insufficient Baseline Financial Data
               </h3>
               <p className="text-sm text-orange-800 mt-1">
                 Vault does not estimate or guess numbers when baseline records are missing. Please enter:
@@ -251,7 +252,7 @@ export const Advisor: React.FC = () => {
           <div>
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Monthly Investment Capacity (FR-21)
+                Monthly Investment Capacity
               </span>
               {capacity?.status === 'ok' && (
                 <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
@@ -288,7 +289,7 @@ export const Advisor: React.FC = () => {
                     className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-md bg-rose-100 text-rose-800"
                   >
                     <ShieldAlert className="w-3.5 h-3.5" />
-                    Gate: {code.replace(/_/g, ' ')}
+                    Gate: {getLabel(code)}
                   </span>
                 ))}
               </div>
@@ -340,7 +341,7 @@ export const Advisor: React.FC = () => {
           <div>
             <div className="flex items-center justify-between mb-3">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                Risk Profile (FR-22)
+                Risk Profile
               </span>
               <Shield className="w-5 h-5 text-indigo-500" />
             </div>
@@ -431,8 +432,8 @@ export const Advisor: React.FC = () => {
                     <span className="w-6 h-6 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold flex items-center justify-center">
                       #{rec.priority_rank}
                     </span>
-                    <span className="text-xs font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono uppercase tracking-wide">
-                      {rec.rec_type.replace(/_/g, ' ')}
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-medium tracking-wide">
+                      {getLabel(rec.rec_type)}
                     </span>
                   </div>
 
@@ -468,7 +469,7 @@ export const Advisor: React.FC = () => {
                     <div className="flex items-center justify-between mb-1.5">
                       <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
                         <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-                        Plain-Language Explanation (FR-25)
+                        Explanation
                       </span>
                       <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-white border border-slate-200 text-slate-600">
                         Source: {rec.explanation_source === 'llm' ? 'AI (Number-Guard Verified)' : 'Template Fallback'}
@@ -550,7 +551,7 @@ export const Advisor: React.FC = () => {
                       </>
                     ) : (
                       <>
-                        <ChevronDown className="w-4 h-4" /> View Assumptions & Risks (FR-24)
+                        <ChevronDown className="w-4 h-4" /> View Assumptions & Risks
                       </>
                     )}
                   </button>
@@ -596,7 +597,7 @@ export const Advisor: React.FC = () => {
             <div className="p-6 border-b border-slate-200 flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-bold text-slate-900">
-                  Risk Tolerance Questionnaire (FR-22)
+                  Risk Tolerance Questionnaire
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
                   8 standardized questions to evaluate your risk appetite and capacity

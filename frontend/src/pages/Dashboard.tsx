@@ -22,6 +22,7 @@ import {
   fetchTimeline,
   triggerDemoSeed,
 } from '../api/dashboard';
+import { getLabel } from '../lib/labels.js';
 
 function formatCurrency(val: number | null | undefined): string {
   if (val === null || val === undefined) return '—';
@@ -183,7 +184,7 @@ export const Dashboard: React.FC = () => {
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 text-xs text-amber-900 flex items-start gap-2.5">
           <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
           <div>
-            <span className="font-bold">Data Freshness Alert (FR-28): </span>
+            <span className="font-bold">Data Freshness Alert: </span>
             Some financial figures may be outdated ({data?.freshness.stale_reasons.join(', ')}).
             Update transactions or holding balances to keep recommendations accurate.
           </div>
@@ -221,13 +222,13 @@ export const Dashboard: React.FC = () => {
               : 'text-slate-500 hover:text-slate-800'
           }`}
         >
-          Data & Privacy (FR-30)
+          Data & Privacy
         </button>
       </div>
 
       {activeTab === 'overview' && (
         <div className="space-y-6">
-          {/* Key Metric Tiles (FR-10, FR-18, FR-19, FR-20) */}
+          {/* Key Metric Tiles */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1">
@@ -271,18 +272,18 @@ export const Dashboard: React.FC = () => {
                   : formatCurrency(data?.investment_capacity)}
               </div>
               <span className="text-xs text-slate-500 mt-1 block capitalize">
-                Status: {data?.investment_capacity_status}
+                Status: {getLabel(data?.investment_capacity_status)}
               </span>
             </div>
           </div>
 
-          {/* Physical Assets Estimate Banner (FR-18: shown separately, never added to liquid net worth) */}
+          {/* Physical Assets Estimate Banner */}
           {data?.physical_assets_estimate && data.physical_assets_estimate > 0 && (
             <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center justify-between text-xs">
               <div className="flex items-center gap-2 text-slate-700">
                 <Receipt className="w-4 h-4 text-indigo-500" />
                 <span>
-                  <strong>Estimated Physical Asset Value (FR-18):</strong>{' '}
+                  <strong>Estimated Physical Asset Value:</strong>{' '}
                   {formatCurrency(data.physical_assets_estimate)}
                   <span className="text-slate-400 ml-1.5">
                     (Separately tracked possessions; never counted as liquid wealth)
@@ -448,11 +449,11 @@ export const Dashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Tab: Timeline & Calendar (FR-12) */}
+      {/* Tab: Timeline & Calendar */}
       {activeTab === 'timeline' && (
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4">
           <div>
-            <h2 className="text-lg font-bold text-slate-900">Unified Obligations Timeline (FR-12)</h2>
+            <h2 className="text-lg font-bold text-slate-900">Unified Obligations Timeline</h2>
             <p className="text-xs text-slate-500">
               Chronological schedule of EMI payments, maintenance services, warranty expiries, and goal milestones
             </p>
@@ -496,11 +497,11 @@ export const Dashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Tab: Data Export & Delete (FR-30) */}
+      {/* Tab: Data Export & Delete */}
       {activeTab === 'settings' && (
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-6">
           <div>
-            <h2 className="text-lg font-bold text-slate-900">Data Management & Privacy (FR-30)</h2>
+            <h2 className="text-lg font-bold text-slate-900">Data Management & Privacy</h2>
             <p className="text-xs text-slate-500 mt-0.5">
               You own your data. Export everything as structured JSON or purge your account.
             </p>
@@ -521,7 +522,7 @@ export const Dashboard: React.FC = () => {
                 className="mt-4 py-2 px-4 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-lg flex items-center justify-center gap-2"
               >
                 <Download className="w-3.5 h-3.5" />
-                Export My Data (FR-30)
+                Export My Data
               </button>
             </div>
 

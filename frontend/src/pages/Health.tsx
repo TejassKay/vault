@@ -30,7 +30,7 @@ export const Health: React.FC = () => {
       <div className="flex items-center justify-between border-b border-slate-100 pb-4">
         <div>
           <h2 className="text-lg font-bold text-slate-800">Backend System Status</h2>
-          <p className="text-xs text-slate-500">NFR-6 Health Check Verification</p>
+          <p className="text-xs text-slate-500">System Health Verification</p>
         </div>
         <button
           onClick={checkStatus}

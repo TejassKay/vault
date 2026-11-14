@@ -405,7 +405,7 @@ def update_recommendation_status(
     if not rec:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Recommendation with ID {recommendation_id} not found",
+            detail="Recommendation not found.",
         )
 
     rec.status = data.status

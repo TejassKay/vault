@@ -1,4 +1,5 @@
 import { apiRequest } from './client';
+import { getFriendlyErrorMessage } from '../lib/labels.js';
 
 export interface ExtractionField {
   value: string | number | null;
@@ -98,7 +99,7 @@ export async function uploadBill(file: File): Promise<BillResponse> {
     } catch {
       // fallback
     }
-    throw new Error(detail);
+    throw new Error(getFriendlyErrorMessage(detail));
   }
 
   return response.json();

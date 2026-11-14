@@ -87,7 +87,7 @@ export const Goals: React.FC = () => {
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Savings Goals & Projections</h1>
         <p className="text-sm text-slate-500">
-          Create priority-based goals and view required contributions across multiple growth scenarios (FR-9, FR-27).
+          Create priority-based goals and view required contributions across multiple growth scenarios.
         </p>
       </div>
 
@@ -99,7 +99,7 @@ export const Goals: React.FC = () => {
 
       {/* Create Goal Card */}
       <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
-        <h2 className="text-lg font-semibold text-slate-900">Create a New Goal (FR-9)</h2>
+        <h2 className="text-lg font-semibold text-slate-900">Create a New Goal</h2>
         <form onSubmit={handleCreateGoal} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
           <div>
             <label className="block text-xs font-semibold text-slate-600 mb-1">Goal Title</label>
@@ -166,7 +166,7 @@ export const Goals: React.FC = () => {
           <div className="flex justify-between items-center">
             <div>
               <h2 className="text-lg font-bold text-indigo-950">
-                Contribution Scenarios: {activeProjection.title} (FR-27)
+                Contribution Scenarios: {activeProjection.title}
               </h2>
               <p className="text-xs text-indigo-700">
                 {activeProjection.months_left} months remaining • Progress: {activeProjection.progress_percent}%
@@ -234,7 +234,7 @@ export const Goals: React.FC = () => {
                   onClick={() => handleViewProjection(g.goal_id)}
                   className="text-xs font-medium text-indigo-600 hover:text-indigo-800"
                 >
-                  View Scenarios (FR-27) ➔
+                  View Scenarios ➔
                 </button>
 
                 {savingGoalId === g.goal_id ? (

@@ -7,6 +7,7 @@ import {
   markServiceDone,
   uploadBill,
 } from '../api/assets';
+import { getLabel } from '../lib/labels.js';
 
 export const Assets: React.FC = () => {
   const [appliances, setAppliances] = useState<ApplianceResponse[]>([]);
@@ -184,9 +185,9 @@ export const Assets: React.FC = () => {
         <div className="bg-indigo-50 border border-indigo-200 p-6 rounded-xl shadow-sm">
           <div className="flex justify-between items-center mb-4">
             <div>
-              <h2 className="text-lg font-semibold text-indigo-950">Review & Correct Extracted Details (FR-4)</h2>
+              <h2 className="text-lg font-semibold text-indigo-950">Review & Correct Extracted Details</h2>
               <p className="text-xs text-indigo-700">
-                Parse Status: <span className="font-semibold">{extractedBill.parse_status}</span>. You can edit any field before confirming.
+                Parse Status: <span className="font-semibold">{getLabel(extractedBill.parse_status)}</span>. You can edit any field before confirming.
               </p>
             </div>
             <button
@@ -299,7 +300,7 @@ export const Assets: React.FC = () => {
                 disabled={loading}
                 className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-5 rounded-lg text-sm"
               >
-                Confirm & Create Service Schedule (FR-5)
+                Confirm & Create Service Schedule
               </button>
             </div>
           </form>
