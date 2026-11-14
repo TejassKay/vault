@@ -282,7 +282,6 @@ export const Finances: React.FC = () => {
         <Card className="space-y-4">
           <div className="border-b border-border pb-3 flex justify-between items-center">
             <h3 className="text-lg font-serif text-ink">Income Sources ({incomeSources.length})</h3>
-            <span className="text-[10px] font-mono text-muted-ink uppercase">FR-15</span>
           </div>
 
           <form onSubmit={handleAddIncome} className="flex gap-2">
@@ -356,7 +355,6 @@ export const Finances: React.FC = () => {
         <Card className="space-y-4">
           <div className="border-b border-border pb-3 flex justify-between items-center">
             <h3 className="text-lg font-serif text-ink">Record Transaction ({transactions.length})</h3>
-            <span className="text-[10px] font-mono text-muted-ink uppercase">FR-7</span>
           </div>
 
           <form onSubmit={handleAddTxn} className="flex gap-2">
@@ -418,7 +416,7 @@ export const Finances: React.FC = () => {
                       <td className="p-2.5">
                         <StatusPill
                           label={t.type}
-                          variant={t.type === 'income' ? 'growth' : 'neutral'}
+                          variant={t.type === 'income' ? 'growth' : 'liability'}
                         />
                       </td>
                       <td className="p-2.5 font-mono text-right">
@@ -439,7 +437,6 @@ export const Finances: React.FC = () => {
         <Card className="space-y-4">
           <div className="border-b border-border pb-3 flex justify-between items-center">
             <h3 className="text-lg font-serif text-ink">Liabilities & EMIs ({liabilities.length})</h3>
-            <span className="text-[10px] font-mono text-muted-ink uppercase">FR-16</span>
           </div>
 
           <form onSubmit={handleAddLiability} className="grid grid-cols-3 gap-2">
@@ -499,11 +496,14 @@ export const Finances: React.FC = () => {
                         {l.lender_name || l.type}
                       </td>
                       <td className="p-2.5 font-mono text-[11px] text-muted-ink">Day {l.due_day}</td>
-                      <td className="p-2.5 font-mono text-right text-muted-ink">
+                      <td className="p-2.5 font-mono text-right text-liability">
                         <Money amount={l.outstanding_principal} />
                       </td>
                       <td className="p-2.5 font-mono text-right font-medium text-liability">
-                        <Money amount={l.emi_amount} />
+                        <span className="inline-flex items-center gap-1.5">
+                          <StatusPill label="EMI" variant="liability" />
+                          <Money amount={l.emi_amount} />
+                        </span>
                       </td>
                     </tr>
                   ))
@@ -517,7 +517,6 @@ export const Finances: React.FC = () => {
         <Card className="space-y-4">
           <div className="border-b border-border pb-3 flex justify-between items-center">
             <h3 className="text-lg font-serif text-ink">Financial Holdings ({holdings.length})</h3>
-            <span className="text-[10px] font-mono text-muted-ink uppercase">FR-17</span>
           </div>
 
           <form onSubmit={handleAddHolding} className="grid grid-cols-2 gap-2">

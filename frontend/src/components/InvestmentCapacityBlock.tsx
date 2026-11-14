@@ -23,21 +23,35 @@ export const InvestmentCapacityBlock: React.FC<InvestmentCapacityBlockProps> = (
   className = '',
 }) => {
   // Compute segments for the horizontal bar from steps if available
-  // Filter steps with non-null values
   const validSteps = steps.filter((s) => s.value !== null && s.value !== undefined);
-  const totalValue = validSteps.reduce((acc, s) => acc + Math.abs(Number(s.value)), 0) || 1;
+  const nonZeroSteps = validSteps.filter((s) => Math.abs(Number(s.value)) > 0);
+  const totalValue = nonZeroSteps.reduce((acc, s) => acc + Math.abs(Number(s.value)), 0) || 1;
+
+  const isObligationStep = (step: CapacityStep) =>
+    Number(step.value) < 0 ||
+    /obligation|expense|emi|debt|liability|tax|outflow|deduct/i.test(step.name);
+
+  const isGoalStep = (step: CapacityStep) => /goal/i.test(step.name);
 
   return (
-    <div className={`bg-ink text-canvas rounded-sm p-6 flex flex-col justify-between border border-ink ${className}`}>
+    <div className={`bg-ink text-canvas rounded-sm p-6 flex flex-col justify-between border border-gold ${className}`}>
       <div>
-        <div className="flex items-center justify-between border-b border-muted-ink/40 pb-3">
+        <div className="flex items-center justify-between border-b border-gold/40 pb-3">
           <div>
-            <span className="text-[11px] font-mono tracking-widest uppercase text-muted-ink block">
+            <span className="text-[11px] font-mono tracking-widest uppercase text-canvas/65 block">
               Investment Capacity
             </span>
             <span className="text-xs text-canvas/70 font-sans">Monthly investable surplus after gates & buffers</span>
           </div>
-          <span className="text-xs font-mono px-2 py-0.5 rounded-sm border border-canvas/20 uppercase tracking-wide">
+          <span
+            className={`text-xs font-mono px-2 py-0.5 rounded-sm border uppercase tracking-wide ${
+              status === 'ok'
+                ? 'border-growth/60 bg-growth/20 text-canvas'
+                : status === 'blocked'
+                ? 'border-liability/60 bg-liability/20 text-canvas'
+                : 'border-canvas/20 text-canvas/80'
+            }`}
+          >
             Status: {getLabel(status)}
           </span>
         </div>
@@ -87,30 +101,42 @@ export const InvestmentCapacityBlock: React.FC<InvestmentCapacityBlockProps> = (
         </div>
 
         {/* Stacked Horizontal Bar (Section 6.7) */}
-        {validSteps.length > 0 && (
-          <div className="space-y-2 mt-4 pt-4 border-t border-muted-ink/30">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-muted-ink block">
+        {nonZeroSteps.length > 0 && (
+          <div className="space-y-2 mt-4 pt-4 border-t border-gold/30">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-canvas/65 block">
               Capacity Composition Breakdown
             </span>
             <div className="h-3 w-full bg-canvas/10 rounded-sm overflow-hidden flex border border-canvas/20">
-              {validSteps.map((step, idx) => {
-                const widthPct = Math.max(8, (Math.abs(Number(step.value)) / totalValue) * 100);
-                const barColors = [
-                  'bg-growth',
-                  'bg-gold',
-                  'bg-liability',
-                  'bg-canvas/50',
-                  'bg-muted-ink',
-                ];
+              {nonZeroSteps.map((step, idx) => {
+                const widthPct = (Math.abs(Number(step.value)) / totalValue) * 100;
+                const barColor = isObligationStep(step)
+                  ? 'bg-liability'
+                  : isGoalStep(step)
+                  ? 'bg-growth/75'
+                  : 'bg-growth';
                 return (
                   <div
                     key={idx}
-                    style={{ width: `${widthPct}%` }}
-                    className={`${barColors[idx % barColors.length]} border-r border-ink/40 last:border-r-0`}
+                    style={{ width: `${widthPct}%`, minWidth: '4px' }}
+                    className={`${barColor} border-r border-ink/40 last:border-r-0 transition-all`}
                     title={`${step.name}: ${step.value}`}
                   />
                 );
               })}
+            </div>
+            <div className="flex flex-wrap items-center gap-4 pt-1 text-[10px] font-mono text-canvas/70">
+              <span className="inline-flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-xs bg-growth inline-block" />
+                Surplus
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-xs bg-growth/75 inline-block" />
+                Goals
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-xs bg-liability inline-block" />
+                Obligations
+              </span>
             </div>
           </div>
         )}
@@ -118,7 +144,7 @@ export const InvestmentCapacityBlock: React.FC<InvestmentCapacityBlockProps> = (
         {/* Transparent Math: Step-by-Step Equation */}
         {validSteps.length > 0 && (
           <div className="mt-4 space-y-1.5 text-xs font-mono">
-            <span className="text-[10px] font-mono uppercase tracking-wider text-muted-ink block mb-1">
+            <span className="text-[10px] font-mono uppercase tracking-wider text-canvas/65 block mb-1">
               Deterministic Calculation Steps (Real API Values)
             </span>
             <div className="bg-canvas/5 rounded-sm p-3 border border-canvas/10 space-y-1.5">

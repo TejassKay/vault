@@ -8,8 +8,6 @@ import {
   Download,
   Trash2,
   RefreshCw,
-  Sliders,
-  CheckCircle,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
@@ -19,7 +17,6 @@ import {
   exportUserData,
   fetchDashboard,
   fetchTimeline,
-  triggerDemoSeed,
 } from '../api/dashboard';
 import { fetchInvestmentCapacity, InvestmentCapacity } from '../api/advisor';
 import Money from '../components/Money';
@@ -34,8 +31,6 @@ export const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'timeline' | 'settings'>('overview');
-  const [seeding, setSeeding] = useState<boolean>(false);
-  const [seedSuccess, setSeedSuccess] = useState<string | null>(null);
 
   const loadAll = async () => {
     try {
@@ -59,20 +54,6 @@ export const Dashboard: React.FC = () => {
   useEffect(() => {
     loadAll();
   }, []);
-
-  const handleSeed = async (scenario: 'A' | 'B') => {
-    try {
-      setSeeding(true);
-      setSeedSuccess(null);
-      const res = await triggerDemoSeed(scenario);
-      setSeedSuccess(res.message);
-      await loadAll();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Demo seed failed');
-    } finally {
-      setSeeding(false);
-    }
-  };
 
   const handleExport = async () => {
     try {
@@ -124,7 +105,7 @@ export const Dashboard: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-12">
       {/* Top Ledger Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gold/60 pb-4">
         <div>
           <h1 className="text-3xl font-serif text-ink tracking-tight">Financial Ledger</h1>
           <p className="text-xs font-sans text-muted-ink mt-0.5">
@@ -133,27 +114,6 @@ export const Dashboard: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {/* Demo Scenario Switcher (Spec 6.6 & 7.4) */}
-          <div className="flex items-center bg-canvas rounded-sm p-1 border border-border">
-            <span className="text-[10px] font-mono uppercase text-muted-ink px-2 flex items-center gap-1">
-              <Sliders className="w-3 h-3" /> Scenario:
-            </span>
-            <button
-              onClick={() => handleSeed('A')}
-              disabled={seeding}
-              className="px-2.5 py-1 text-xs font-mono rounded-sm bg-surface text-ink border border-border hover:border-ink transition-colors disabled:opacity-50"
-            >
-              Seed A (₹45k)
-            </button>
-            <button
-              onClick={() => handleSeed('B')}
-              disabled={seeding}
-              className="px-2.5 py-1 text-xs font-mono rounded-sm bg-surface text-ink border border-border hover:border-ink transition-colors disabled:opacity-50 ml-1"
-            >
-              Seed B (₹2.6L)
-            </button>
-          </div>
-
           <button
             onClick={loadAll}
             className="p-2 border border-border rounded-sm hover:border-ink text-ink bg-surface transition-colors"
@@ -164,13 +124,6 @@ export const Dashboard: React.FC = () => {
           </button>
         </div>
       </div>
-
-      {seedSuccess && (
-        <div className="bg-surface border border-growth text-growth px-4 py-2.5 rounded-sm text-xs flex items-center gap-2 font-sans">
-          <CheckCircle className="w-4 h-4 text-growth flex-shrink-0" />
-          {seedSuccess}
-        </div>
-      )}
 
       {error && (
         <div className="bg-surface border border-liability text-liability p-4 rounded-sm text-xs font-sans">
@@ -282,15 +235,24 @@ export const Dashboard: React.FC = () => {
                     </div>
                   </div>
                   <div className="text-[11px] font-sans text-muted-ink mt-3 pt-2 border-t border-border flex items-center justify-between">
-                    <span>Safety target</span>
-                    <span className="font-mono text-ink font-semibold">6.0 mo</span>
+                    {snap?.emergency_coverage_months !== undefined && snap.emergency_coverage_months < 6 ? (
+                      <>
+                        <span className="text-liability font-medium">Emergency Fund Low</span>
+                        <span className="font-mono text-liability font-semibold">Target 6.0 mo</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Safety target</span>
+                        <span className="font-mono text-ink font-semibold">6.0 mo</span>
+                      </>
+                    )}
                   </div>
                 </Card>
               </div>
 
               {/* Top Recommendation Highlight (FR-11) */}
               {data?.top_recommendation && (
-                <Card className="border border-border bg-surface">
+                <Card className="border border-gold/70 bg-surface">
                   <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                     <div className="space-y-1.5">
                       <div className="flex items-center gap-2">
@@ -364,7 +326,10 @@ export const Dashboard: React.FC = () => {
                         <div className="w-full bg-surface border border-border rounded-sm h-2 overflow-hidden">
                           <div
                             className="bg-growth h-full transition-all"
-                            style={{ width: `${Math.min(100, g.progress_percent)}%` }}
+                            style={{
+                              width: `${Math.min(100, g.progress_percent)}%`,
+                              minWidth: g.progress_percent > 0 ? '6px' : undefined,
+                            }}
                           />
                         </div>
                         <div className="flex items-center justify-between text-[11px] font-mono text-muted-ink pt-1">

@@ -220,7 +220,10 @@ export const Goals: React.FC = () => {
                       <div className="w-full bg-canvas border border-border rounded-sm h-2 overflow-hidden">
                         <div
                           className="bg-growth h-full transition-all"
-                          style={{ width: `${progressPct}%` }}
+                          style={{
+                            width: `${progressPct}%`,
+                            minWidth: progressPct > 0 ? '6px' : undefined,
+                          }}
                         />
                       </div>
                       <div className="flex justify-between text-xs font-mono pt-1">
@@ -245,7 +248,7 @@ export const Goals: React.FC = () => {
                       onClick={() => handleViewProjection(goal.goal_id)}
                       className="text-xs font-mono text-ink underline hover:text-muted-ink"
                     >
-                      View Projections (FR-27) &rarr;
+                      View projections &rarr;
                     </button>
 
                     {savingGoalId === goal.goal_id ? (
@@ -299,7 +302,7 @@ export const Goals: React.FC = () => {
             <div className="flex justify-between items-start border-b border-border pb-3">
               <div>
                 <span className="text-[10px] font-mono uppercase tracking-wider text-muted-ink block">
-                  Deterministic Planning Projections (FR-27)
+                  Deterministic Planning Projections
                 </span>
                 <h3 className="text-xl font-serif text-ink mt-0.5">
                   Monthly Contribution Scenarios

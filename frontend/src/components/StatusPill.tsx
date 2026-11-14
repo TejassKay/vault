@@ -14,9 +14,9 @@ export const StatusPill: React.FC<StatusPillProps> = ({
   className = '',
 }) => {
   const variantStyles = {
-    growth: 'text-growth bg-growth/10 border-growth/30',
-    liability: 'text-liability bg-liability/10 border-liability/30',
-    gold: 'text-ink bg-gold/15 border-gold/40',
+    growth: 'text-growth bg-growth/[0.08] border-growth/35',
+    liability: 'text-liability bg-liability/[0.08] border-liability/35',
+    gold: 'text-ink bg-gold/[0.08] border-gold/50',
     neutral: 'text-muted-ink bg-canvas border-border',
   }[variant];
 

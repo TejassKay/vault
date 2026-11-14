@@ -45,12 +45,12 @@ function calculateWarrantyStatus(endDateStr: string | null | undefined): { label
   const diffDays = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
   if (diffDays < 0) {
-    return { label: 'WARRANTY EXPIRED', variant: 'neutral' };
+    return { label: 'WARRANTY EXPIRED', variant: 'liability' };
   }
   if (diffDays <= 30) {
     return { label: `WARRANTY ENDS IN ${diffDays} DAYS`, variant: 'liability' };
   }
-  return { label: 'ACTIVE', variant: 'growth' };
+  return { label: 'WARRANTY ACTIVE', variant: 'growth' };
 }
 
 export const Assets: React.FC = () => {

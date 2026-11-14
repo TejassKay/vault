@@ -21,19 +21,20 @@ export const Money: React.FC<MoneyProps> = ({ amount, className = '', showSign =
 
   const num = Number(amount);
   const isNegative = num < 0;
+  const isPositive = showSign && num > 0;
   const absFormatted = formatINR(Math.abs(num));
 
   // If negative or explicitly requested positive sign
   const displayValue = isNegative
     ? `-${absFormatted}`
-    : showSign && num > 0
+    : isPositive
     ? `+${absFormatted}`
     : absFormatted;
 
   return (
     <span
       className={`font-mono tabular-nums ${
-        isNegative ? 'text-liability' : ''
+        isNegative ? 'text-liability' : isPositive ? 'text-growth' : ''
       } ${className}`}
       style={{ fontVariantNumeric: 'tabular-nums' }}
     >
