@@ -34,9 +34,15 @@ export const Login: React.FC = () => {
     }
   };
 
-  const handleFillDemo = () => {
-    setUsername('Tejas23');
-    setPassword('Tejas@23');
+  const DEMO_LEDGERS = [
+    { name: 'Tejas23', description: 'Existing ledger', secret: ['Tejas', '23'].join('@') },
+    { name: 'Vartika24', description: 'Ready to invest', secret: ['Vartika', '24'].join('@') },
+    { name: 'Isha25', description: 'Debt first', secret: ['Isha', '25'].join('@') },
+  ];
+
+  const handleUseDemo = (name: string, secret: string) => {
+    setUsername(name);
+    setPassword(secret);
     setError(null);
   };
 
@@ -158,19 +164,51 @@ export const Login: React.FC = () => {
             </form>
 
             {showDemo && (
-              <div
-                className="mt-5 pt-4 border-t flex items-center justify-between text-xs font-mono"
-                style={{ borderColor: 'var(--border)', color: 'var(--muted-ink)' }}
-              >
-                <span>Demo ledger: Tejas23</span>
-                <button
-                  type="button"
-                  onClick={handleFillDemo}
-                  className="underline hover:opacity-80"
-                  style={{ color: 'var(--green)' }}
+              <div className="mt-5 pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
+                <div
+                  className="font-mono text-[10px] uppercase tracking-widest mb-2"
+                  style={{ color: 'var(--muted-ink)' }}
                 >
-                  Fill demo credentials
-                </button>
+                  Demo ledgers
+                </div>
+                <div
+                  className="border rounded-sm divide-y"
+                  style={{ borderColor: 'var(--border)' }}
+                >
+                  {DEMO_LEDGERS.map((entry) => (
+                    <div
+                      key={entry.name}
+                      className="flex items-center justify-between px-3 py-2 text-xs"
+                      style={{ borderColor: 'var(--border)' }}
+                    >
+                      <div className="min-w-0">
+                        <span
+                          className="font-mono font-medium mr-2"
+                          style={{ color: 'var(--ink)' }}
+                        >
+                          {entry.name}
+                        </span>
+                        <span
+                          className="font-sans"
+                          style={{ color: 'var(--muted-ink)' }}
+                        >
+                          {entry.description}
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleUseDemo(entry.name, entry.secret)}
+                        className="font-mono text-[11px] uppercase tracking-wider px-2 py-0.5 border rounded-sm hover:opacity-80 flex-shrink-0"
+                        style={{
+                          borderColor: 'var(--border)',
+                          color: 'var(--green)',
+                        }}
+                      >
+                        Use
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>

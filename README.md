@@ -78,6 +78,12 @@ npm run dev
 ```
 Frontend will be available at [http://localhost:5173](http://localhost:5173).
 
+### Seed Demo Ledgers (`Vartika24` & `Isha25`)
+```bash
+cd backend
+python -m app.seed.demo_ledgers
+```
+
 ---
 
 ## 4. Alternative: Docker Compose Setup
