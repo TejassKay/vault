@@ -6,6 +6,8 @@ import { Health } from './pages/Health';
 import { Assets } from './pages/Assets';
 import { Finances } from './pages/Finances';
 import { Goals } from './pages/Goals';
+import { Advisor } from './pages/Advisor';
+import { Onboarding } from './pages/Onboarding';
 
 export const App: React.FC = () => {
   return (
@@ -13,18 +15,12 @@ export const App: React.FC = () => {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Dashboard />} />
+          <Route path="onboarding" element={<Onboarding />} />
           <Route path="health" element={<Health />} />
           <Route path="assets" element={<Assets />} />
           <Route path="finances" element={<Finances />} />
           <Route path="goals" element={<Goals />} />
-          <Route
-            path="advisor"
-            element={
-              <div className="p-8 text-center text-slate-500 bg-white rounded-xl border border-slate-200">
-                Explainable Advisor will be implemented in Phase 4.
-              </div>
-            }
-          />
+          <Route path="advisor" element={<Advisor />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
