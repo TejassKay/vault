@@ -8,6 +8,9 @@ import {
   uploadBill,
 } from '../api/assets';
 import { getLabel } from '../lib/labels.js';
+import Money from '../components/Money';
+import Card from '../components/Card';
+import StatusPill from '../components/StatusPill';
 
 function formatToIsoDate(dStr: string): string {
   if (!dStr) return '';
@@ -33,6 +36,21 @@ function formatToIsoDate(dStr: string): string {
     return `${year}-${mon}-${day}`;
   }
   return '';
+}
+
+function calculateWarrantyStatus(endDateStr: string | null | undefined): { label: string; variant: 'growth' | 'liability' | 'neutral' } {
+  if (!endDateStr) return { label: 'NO WARRANTY', variant: 'neutral' };
+  const end = new Date(endDateStr);
+  const now = new Date();
+  const diffDays = Math.ceil((end.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) {
+    return { label: 'WARRANTY EXPIRED', variant: 'neutral' };
+  }
+  if (diffDays <= 30) {
+    return { label: `WARRANTY ENDS IN ${diffDays} DAYS`, variant: 'liability' };
+  }
+  return { label: 'ACTIVE', variant: 'growth' };
 }
 
 export const Assets: React.FC = () => {
@@ -97,22 +115,6 @@ export const Assets: React.FC = () => {
       const isoPDate = formatToIsoDate(rawPDate);
       setPurchaseDate(isoPDate || new Date().toISOString().split('T')[0]);
       setWarrantyMonths(String(ext.warranty_months?.value || '12'));
-
-      // Pre-fill Category selection from extraction
-      const catVal = String(ext.category?.value || '').toLowerCase();
-      if (catVal.includes('refrigerator') || catVal.includes('fridge')) {
-        setCategoryId('2');
-      } else if (catVal.includes('washing') || catVal.includes('washer')) {
-        setCategoryId('3');
-      } else if (catVal.includes('purifier') || catVal.includes('ro') || catVal.includes('water')) {
-        setCategoryId('4');
-      } else if (catVal.includes('geyser') || catVal.includes('heater')) {
-        setCategoryId('5');
-      } else if (catVal.includes('chimney') || catVal.includes('hood')) {
-        setCategoryId('6');
-      } else if (catVal.includes('ac') || catVal.includes('air conditioner')) {
-        setCategoryId('1');
-      }
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
@@ -126,24 +128,25 @@ export const Assets: React.FC = () => {
 
   const handleConfirm = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!productName || !purchaseDate) {
-      setError('Product name and purchase date are required.');
-      return;
-    }
+    if (!extractedBill) return;
 
     try {
       setLoading(true);
       setError(null);
 
-      const ext = extractedBill?.extraction_json || {};
-      const corrected: Record<string, unknown> = {};
-      if (ext.product_name && ext.product_name.value !== productName) corrected.product_name = productName;
-      if (ext.brand && ext.brand.value !== brand) corrected.brand = brand;
-      if (ext.price && String(ext.price.value) !== price) corrected.price = price;
-      if (ext.purchase_date && ext.purchase_date.value !== purchaseDate) corrected.purchase_date = purchaseDate;
+      const ext = extractedBill.extraction_json || {};
+      const correctedFieldsObj: Record<string, boolean> = {};
+
+      if (productName !== String(ext.product_name?.value || '')) correctedFieldsObj.product_name = true;
+      if (brand !== String(ext.brand?.value || '')) correctedFieldsObj.brand = true;
+      if (modelNumber !== String(ext.model_number?.value || '')) correctedFieldsObj.model_number = true;
+      if (seller !== String(ext.seller?.value || '')) correctedFieldsObj.seller = true;
+      if (price !== (ext.price?.value ? String(ext.price.value) : '')) correctedFieldsObj.price = true;
+      if (purchaseDate !== String(ext.purchase_date?.value || '')) correctedFieldsObj.purchase_date = true;
+      if (warrantyMonths !== String(ext.warranty_months?.value || '')) correctedFieldsObj.warranty_months = true;
 
       await confirmAppliance({
-        bill_id: extractedBill?.bill_id || null,
+        bill_id: extractedBill.bill_id,
         category_id: parseInt(categoryId, 10),
         product_name: productName,
         brand: brand || null,
@@ -151,8 +154,8 @@ export const Assets: React.FC = () => {
         seller: seller || null,
         price: price ? parseFloat(price) : null,
         purchase_date: purchaseDate,
-        warranty_months: parseInt(warrantyMonths, 10) || 0,
-        corrected_fields: Object.keys(corrected).length > 0 ? corrected : null,
+        warranty_months: warrantyMonths ? parseInt(warrantyMonths, 10) : 12,
+        corrected_fields: correctedFieldsObj,
       });
 
       setExtractedBill(null);
@@ -175,6 +178,8 @@ export const Assets: React.FC = () => {
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
+      } else {
+        setError('Failed to update service');
       }
     }
   };
@@ -185,13 +190,13 @@ export const Assets: React.FC = () => {
     const conf = f.confidence ?? 0.0;
     if (conf < 0.6) {
       return (
-        <span className="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800 border border-amber-200">
-          Please check ({(conf * 100).toFixed(0)}%)
+        <span className="ml-1.5 inline-flex items-center px-1.5 py-0.2 rounded-sm text-[10px] font-mono text-liability bg-liability/10 border border-liability/30">
+          Verify ({(conf * 100).toFixed(0)}%)
         </span>
       );
     }
     return (
-      <span className="ml-1.5 text-[11px] font-normal text-slate-500">
+      <span className="ml-1.5 text-[11px] font-mono text-muted-ink">
         ({(conf * 100).toFixed(0)}% conf)
       </span>
     );
@@ -201,37 +206,39 @@ export const Assets: React.FC = () => {
     const f = extractedBill?.extraction_json?.[fieldName];
     const conf = f?.confidence ?? 0.0;
     if (conf < 0.6) {
-      return 'w-full text-sm p-2 border border-amber-400 bg-amber-50/30 focus:border-amber-500 rounded-lg transition-colors';
+      return 'w-full text-xs font-mono p-2 border border-liability/60 bg-liability/5 rounded-sm focus:border-ink transition-colors';
     }
-    return 'w-full text-sm p-2 border border-slate-300 rounded-lg bg-white transition-colors';
+    return 'w-full text-xs font-mono p-2 border border-border rounded-sm bg-surface focus:border-ink transition-colors';
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="max-w-7xl mx-auto space-y-6 pb-12">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Assets & Bills</h1>
-          <p className="text-sm text-slate-500">
-            Upload bills, review AI extractions, track warranties, and view automated service schedules.
+          <h1 className="text-3xl font-serif text-ink tracking-tight">Physical Asset Index</h1>
+          <p className="text-xs font-sans text-muted-ink mt-0.5">
+            Archival index cards for household appliances, warranties, and service schedules
           </p>
         </div>
       </div>
 
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+        <div className="p-4 bg-surface border border-liability text-liability rounded-sm text-xs font-sans">
           {error}
         </div>
       )}
 
       {/* Bill Upload Section */}
-      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-        <h2 className="text-lg font-semibold text-slate-900 mb-2">Upload Appliance Bill</h2>
-        <p className="text-sm text-slate-500 mb-4">
-          Supported formats: PDF, JPG, PNG (Max 10MB). Text and key details will be extracted automatically.
-        </p>
-        <div className="flex items-center gap-4">
-          <label className="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg text-sm transition-colors">
-            {uploading ? 'Processing Bill...' : 'Choose File to Upload'}
+      <Card className="border border-border space-y-4">
+        <div>
+          <h2 className="text-xl font-serif text-ink">Index New Bill or Invoice</h2>
+          <p className="text-xs font-sans text-muted-ink mt-0.5">
+            Supported formats: PDF, JPG, PNG (Max 10MB). Text, prices, serial numbers, and warranty intervals will be parsed into an archival index record.
+          </p>
+        </div>
+        <div className="flex items-center gap-4 pt-1">
+          <label className="cursor-pointer bg-ink hover:bg-muted-ink text-canvas font-mono py-2 px-4 rounded-sm text-xs transition-colors border border-ink">
+            {uploading ? 'Processing Bill...' : 'Upload Bill / Invoice'}
             <input
               type="file"
               accept=".pdf,.jpg,.jpeg,.png"
@@ -240,23 +247,23 @@ export const Assets: React.FC = () => {
               onChange={handleFileUpload}
             />
           </label>
-          {uploading && <span className="text-sm text-slate-500">Extracting fields with confidence scores...</span>}
+          {uploading && <span className="text-xs font-mono text-muted-ink">Parsing document fields...</span>}
         </div>
-      </div>
+      </Card>
 
-      {/* Extracted Bill Review Modal / Card */}
+      {/* Extracted Bill Review Form */}
       {extractedBill && (
-        <div className="bg-indigo-50 border border-indigo-200 p-6 rounded-xl shadow-sm">
-          <div className="flex justify-between items-center mb-4">
+        <Card className="border border-ink bg-surface space-y-4">
+          <div className="flex justify-between items-center border-b border-border pb-3">
             <div>
-              <h2 className="text-lg font-semibold text-indigo-950">Review & Correct Extracted Details</h2>
-              <p className="text-xs text-indigo-700">
-                Parse Status: <span className="font-semibold">{getLabel(extractedBill.parse_status)}</span>. You can edit any field before confirming.
+              <h2 className="text-xl font-serif text-ink">Review & Verify Extracted Ledger Record</h2>
+              <p className="text-xs font-sans text-muted-ink mt-0.5">
+                Parse Status: <span className="font-mono font-medium text-ink">{getLabel(extractedBill.parse_status)}</span>. Verify or adjust fields before logging to the ledger.
               </p>
             </div>
             <button
               onClick={() => setExtractedBill(null)}
-              className="text-xs text-slate-500 hover:text-slate-700"
+              className="text-xs font-mono text-muted-ink hover:text-ink"
             >
               Cancel
             </button>
@@ -264,7 +271,7 @@ export const Assets: React.FC = () => {
 
           <form onSubmit={handleConfirm} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-sans text-muted-ink mb-1">
                 Product Name * {renderFieldConf('product_name')}
               </label>
               <input
@@ -277,7 +284,7 @@ export const Assets: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-sans text-muted-ink mb-1">
                 Brand {renderFieldConf('brand')}
               </label>
               <input
@@ -289,7 +296,7 @@ export const Assets: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-sans text-muted-ink mb-1">
                 Model Number {renderFieldConf('model_number')}
               </label>
               <input
@@ -301,7 +308,7 @@ export const Assets: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-sans text-muted-ink mb-1">
                 Seller {renderFieldConf('seller')}
               </label>
               <input
@@ -313,8 +320,8 @@ export const Assets: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Price (₹) {renderFieldConf('price')}
+              <label className="block text-xs font-sans text-muted-ink mb-1">
+                Price (INR) {renderFieldConf('price')}
               </label>
               <input
                 type="number"
@@ -326,7 +333,7 @@ export const Assets: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-sans text-muted-ink mb-1">
                 Purchase Date * {renderFieldConf('purchase_date')}
               </label>
               <input
@@ -339,8 +346,8 @@ export const Assets: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Warranty (Months) {renderFieldConf('warranty_months')}
+              <label className="block text-xs font-sans text-muted-ink mb-1">
+                Warranty Period (Months) {renderFieldConf('warranty_months')}
               </label>
               <input
                 type="number"
@@ -351,8 +358,8 @@ export const Assets: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Category (for Service Intervals) {renderFieldConf('category')}
+              <label className="block text-xs font-sans text-muted-ink mb-1">
+                Appliance Category (Service Schedule) {renderFieldConf('category')}
               </label>
               <select
                 value={categoryId}
@@ -368,97 +375,146 @@ export const Assets: React.FC = () => {
               </select>
             </div>
 
-            <div className="md:col-span-2 flex justify-end gap-3 mt-2">
+            <div className="md:col-span-2 flex justify-end gap-3 mt-2 pt-3 border-t border-border">
               <button
                 type="submit"
                 disabled={loading}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-5 rounded-lg text-sm"
+                className="bg-growth hover:bg-growth/90 text-surface font-mono py-2 px-5 rounded-sm text-xs transition-colors"
               >
-                Confirm & Create Service Schedule
+                Confirm & Log to Ledger
               </button>
             </div>
           </form>
-        </div>
+        </Card>
       )}
 
-      {/* Appliances List */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-        <div className="p-4 border-b border-slate-100 flex justify-between items-center">
-          <h2 className="font-semibold text-slate-900">Your Appliances & Protection ({appliances.length})</h2>
+      {/* Appliances Archival Index Cards */}
+      <div className="space-y-4">
+        <div className="flex justify-between items-center border-b border-border pb-3">
+          <h2 className="text-xl font-serif text-ink">Archival Index Cards ({appliances.length})</h2>
           <button
             onClick={loadAppliances}
-            className="text-xs text-indigo-600 hover:text-indigo-800 font-medium"
+            className="text-xs font-mono text-muted-ink hover:text-ink"
           >
             Refresh
           </button>
         </div>
 
         {loading && appliances.length === 0 ? (
-          <div className="p-8 text-center text-sm text-slate-400">Loading appliances...</div>
+          <Card className="text-center py-12 text-xs font-mono text-muted-ink">
+            Loading archival index cards...
+          </Card>
         ) : appliances.length === 0 ? (
-          <div className="p-8 text-center text-sm text-slate-400">
-            No appliances registered yet. Upload a bill above to track warranties and maintenance.
-          </div>
+          <Card className="text-center py-12 text-xs font-sans text-muted-ink">
+            No appliances registered in the index. Upload a bill above to record purchases, warranties, and maintenance.
+          </Card>
         ) : (
-          <div className="divide-y divide-slate-100">
-            {appliances.map((appliance) => (
-              <div key={appliance.appliance_id} className="p-5 space-y-3">
-                <div className="flex justify-between items-start">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {appliances.map((appliance) => {
+              const statusInfo = calculateWarrantyStatus(appliance.warranty_end_date);
+              return (
+                <Card
+                  key={appliance.appliance_id}
+                  className="border border-border bg-surface flex flex-col justify-between space-y-4 hover:border-ink transition-colors"
+                >
                   <div>
-                    <h3 className="font-semibold text-slate-900 text-base">{appliance.product_name}</h3>
-                    <p className="text-xs text-slate-500">
-                      {appliance.brand && <span>{appliance.brand} • </span>}
-                      Purchased: {appliance.purchase_date}
-                      {appliance.price && <span> • ₹{Number(appliance.price).toLocaleString('en-IN')}</span>}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <span className="inline-block px-2 py-1 text-xs font-medium rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                      Warranty to {appliance.warranty_end_date}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Services Schedule */}
-                {appliance.services && appliance.services.length > 0 && (
-                  <div className="mt-3 bg-slate-50 p-3 rounded-lg border border-slate-100">
-                    <h4 className="text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-                      Scheduled Maintenance Services ({appliance.services.length})
-                    </h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                      {appliance.services.map((svc) => (
-                        <div
-                          key={svc.service_id}
-                          className="bg-white p-2.5 rounded border border-slate-200 text-xs flex justify-between items-center"
-                        >
-                          <div>
-                            <div className="font-medium text-slate-800">Due: {svc.due_date}</div>
-                            <div className="text-slate-400 text-[10px]">
-                              {svc.guidance_label === 'general' ? 'General Guidance' : 'Manufacturer'}
-                            </div>
-                          </div>
-                          <div>
-                            {svc.status === 'done' ? (
-                              <span className="text-emerald-600 font-semibold text-[11px]">Completed</span>
-                            ) : (
-                              <button
-                                onClick={() => handleServiceComplete(svc.service_id)}
-                                className="px-2 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded text-[11px] font-medium"
-                              >
-                                Mark Done
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
+                    {/* Header: Title + Status Pill */}
+                    <div className="flex items-start justify-between gap-3 border-b border-border pb-3">
+                      <div>
+                        <span className="text-[10px] font-mono tracking-wider uppercase text-muted-ink block">
+                          Card #{appliance.appliance_id} • {appliance.brand || 'Appliance'}
+                        </span>
+                        <h3 className="text-lg font-serif text-ink mt-0.5 leading-snug">
+                          {appliance.product_name}
+                        </h3>
+                      </div>
+                      <StatusPill
+                        label={statusInfo.label}
+                        variant={statusInfo.variant}
+                      />
                     </div>
+
+                    {/* Meta Fields: Mono Model, Purchase Date, Price */}
+                    <div className="grid grid-cols-2 gap-2 mt-3 text-xs">
+                      {appliance.model_number && (
+                        <div className="col-span-2 bg-canvas px-2.5 py-1.5 rounded-sm border border-border flex items-center justify-between">
+                          <span className="text-muted-ink text-[11px] font-sans">Model / Serial No:</span>
+                          <span className="font-mono text-ink font-medium select-all">
+                            {appliance.model_number}
+                          </span>
+                        </div>
+                      )}
+
+                      <div className="bg-canvas px-2.5 py-1.5 rounded-sm border border-border">
+                        <span className="text-muted-ink text-[10px] font-sans block uppercase">Purchased</span>
+                        <span className="font-mono text-xs text-ink">{appliance.purchase_date}</span>
+                      </div>
+
+                      <div className="bg-canvas px-2.5 py-1.5 rounded-sm border border-border">
+                        <span className="text-muted-ink text-[10px] font-sans block uppercase">Invoice Price</span>
+                        <div className="font-mono text-xs text-ink">
+                          {appliance.price ? <Money amount={appliance.price} /> : '—'}
+                        </div>
+                      </div>
+
+                      {appliance.seller && (
+                        <div className="col-span-2 text-[11px] font-sans text-muted-ink px-1">
+                          Seller: <span className="text-ink font-medium">{appliance.seller}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Services Schedule */}
+                    {appliance.services && appliance.services.length > 0 && (
+                      <div className="mt-4 pt-3 border-t border-border space-y-2">
+                        <span className="text-[10px] font-mono uppercase tracking-wider text-muted-ink block">
+                          Service Schedule ({appliance.services.length})
+                        </span>
+                        <div className="space-y-1.5">
+                          {appliance.services.map((svc) => (
+                            <div
+                              key={svc.service_id}
+                              className="bg-canvas p-2 rounded-sm border border-border text-xs flex justify-between items-center"
+                            >
+                              <div>
+                                <span className="font-mono text-[11px] text-ink block">
+                                  Due: {svc.due_date}
+                                </span>
+                                <span className="text-muted-ink text-[10px] font-sans">
+                                  {svc.guidance_label === 'general' ? 'General Guidance' : 'Manufacturer-Confirmed'}
+                                </span>
+                              </div>
+                              <div>
+                                {svc.status === 'done' ? (
+                                  <StatusPill label="COMPLETED" variant="growth" />
+                                ) : (
+                                  <button
+                                    onClick={() => handleServiceComplete(svc.service_id)}
+                                    className="px-2.5 py-1 bg-surface hover:bg-canvas text-ink border border-border rounded-sm text-[11px] font-mono transition-colors"
+                                  >
+                                    Mark Done
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
-            ))}
+
+                  <div className="pt-2 border-t border-border flex items-center justify-between text-[11px] font-mono text-muted-ink">
+                    <span>Warranty: {appliance.warranty_end_date || 'N/A'}</span>
+                    <span>ID: {appliance.appliance_id}</span>
+                  </div>
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>
     </div>
   );
 };
+
+export default Assets;
