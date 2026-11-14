@@ -79,9 +79,13 @@ def build_advisor_plan(
                 f"Your profile is missing required baseline data: {', '.join(snapshot.missing_items)}. "
                 "Vault requires recorded income and regular expenses to evaluate cash flow and capacity."
             ),
-            assumptions=["Complete baseline inputs are necessary before calculating surplus or debt ratios"],
+            assumptions=[
+                "Complete baseline inputs are necessary before calculating surplus or debt ratios"
+            ],
             risks=["Acting on incomplete financial visibility creates unexpected cash shortfalls"],
-            alternatives=["Enter at least one regular income source and expense transactions from the last month"],
+            alternatives=[
+                "Enter at least one regular income source and expense transactions from the last month"
+            ],
             review_trigger="Immediately upon entering income and expense records",
             inputs_snapshot={"missing_items": snapshot.missing_items},
             engine_version="1.0",
@@ -135,8 +139,12 @@ def build_advisor_plan(
                     f"Your monthly expenses and debt obligations exceed your income by ₹{abs(snapshot.net_cash_flow):,.2f}. "
                     f"{cat_str}"
                 ),
-                assumptions=["Discretionary expenses can be adjusted without compromising essential necessities"],
-                risks=["Persistent monthly deficits force reliance on high-cost revolving debt or emergency depletion"],
+                assumptions=[
+                    "Discretionary expenses can be adjusted without compromising essential necessities"
+                ],
+                risks=[
+                    "Persistent monthly deficits force reliance on high-cost revolving debt or emergency depletion"
+                ],
                 alternatives=[
                     "Pause non-essential monthly subscriptions",
                     "Establish a hard weekly discretionary spending limit",
@@ -154,10 +162,14 @@ def build_advisor_plan(
     # -------------------------------------------------------------------------
     # Rank 2: HIGH_INTEREST_DEBT (Any active liability rate >= 12%)
     # -------------------------------------------------------------------------
-    high_interest_liabs = [liab for liab in active_liabilities if liab.interest_rate >= Decimal("12.00")]
+    high_interest_liabs = [
+        liab for liab in active_liabilities if liab.interest_rate >= Decimal("12.00")
+    ]
     if high_interest_liabs:
         highest_rate = max(liab.interest_rate for liab in high_interest_liabs)
-        total_high_principal = sum((liab.outstanding_principal for liab in high_interest_liabs), Decimal("0"))
+        total_high_principal = sum(
+            (liab.outstanding_principal for liab in high_interest_liabs), Decimal("0")
+        )
         candidates.append(
             RecommendationPlanItem(
                 priority_rank=2,
@@ -214,7 +226,9 @@ def build_advisor_plan(
                     f"Monthly essential living and debt burn remains at ₹{monthly_burn:,.2f}",
                     "Surplus cash flow will be retained in liquid bank accounts or liquid funds",
                 ],
-                risks=["Unplanned medical, appliance, or income disruptions could force costly borrowing"],
+                risks=[
+                    "Unplanned medical, appliance, or income disruptions could force costly borrowing"
+                ],
                 alternatives=[
                     "Direct 100% of monthly surplus into a dedicated liquid emergency fund",
                     "Reallocate existing non-locked holdings to liquid reserves",
@@ -236,7 +250,9 @@ def build_advisor_plan(
     elif snapshot.emergency_coverage_months < Decimal("6.00"):
         target_6m = round_cur(Decimal("6") * monthly_burn)
         current_reserves = round_cur(snapshot.emergency_coverage_months * monthly_burn)
-        top_up_mo = capacity.emergency_top_up or round_cur((target_6m - current_reserves) / Decimal("12"))
+        top_up_mo = capacity.emergency_top_up or round_cur(
+            (target_6m - current_reserves) / Decimal("12")
+        )
 
         candidates.append(
             RecommendationPlanItem(
@@ -248,7 +264,10 @@ def build_advisor_plan(
                     f"the 3-month safety minimum, saving ₹{top_up_mo:,.2f}/month alongside your goals will reach "
                     f"the comprehensive 6-month safety reserve of ₹{target_6m:,.2f} over the next 12 months."
                 ),
-                assumptions=["Monthly essential expenses remain stable", "Steady monthly income continues uninterrupted"],
+                assumptions=[
+                    "Monthly essential expenses remain stable",
+                    "Steady monthly income continues uninterrupted",
+                ],
                 risks=["Extended economic or employment disruptions lasting beyond 3 months"],
                 alternatives=[
                     "Park emergency reserves in high-yield liquid mutual funds or sweep-in fixed deposits",
@@ -280,7 +299,9 @@ def build_advisor_plan(
                     f"monthly net cash flow of ₹{snapshot.net_cash_flow:,.2f} by ₹{shortfall:,.2f}/month."
                 ),
                 assumptions=["Goals are scheduled under 0% conservative return projections"],
-                risks=["Attempting to fund all goals simultaneously will cause cash deficits or missed obligations"],
+                risks=[
+                    "Attempting to fund all goals simultaneously will cause cash deficits or missed obligations"
+                ],
                 alternatives=[
                     "Extend target dates for lower-priority goals by 6 to 12 months",
                     "Reduce target amounts for non-essential goals",
@@ -299,7 +320,11 @@ def build_advisor_plan(
     # -------------------------------------------------------------------------
     # Rank 6: INVEST_BY_CATEGORY (Capacity status ok and capacity > 0)
     # -------------------------------------------------------------------------
-    if capacity.status == "ok" and capacity.capacity is not None and capacity.capacity > Decimal("0.00"):
+    if (
+        capacity.status == "ok"
+        and capacity.capacity is not None
+        and capacity.capacity > Decimal("0.00")
+    ):
         alloc = compute_allocation(risk_effective_level, horizon_months=61)
         breakdown_parts: list[str] = []
         breakdown_dict: dict[str, float] = {}
@@ -357,7 +382,9 @@ def build_advisor_plan(
                 "Periodic reviews ensure your emergency coverage and investment capacity remain optimized."
             ),
             assumptions=["Financial variables change across career and life milestones"],
-            risks=["Outdated assumptions can lead to under-insured emergencies or suboptimal asset allocations"],
+            risks=[
+                "Outdated assumptions can lead to under-insured emergencies or suboptimal asset allocations"
+            ],
             alternatives=[
                 "Set a quarterly calendar reminder for checking financial health",
                 "Re-run advisor after any salary change or new loan disbursement",

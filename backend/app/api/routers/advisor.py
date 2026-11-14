@@ -127,8 +127,18 @@ def _load_user_financial_data(
     )
 
     discretionary_txns = [
-        t for t in exp_inputs if t.category.strip().lower() not in {
-            "rent", "groceries", "utilities", "transport", "health", "education", "insurance", "emi"
+        t
+        for t in exp_inputs
+        if t.category.strip().lower()
+        not in {
+            "rent",
+            "groceries",
+            "utilities",
+            "transport",
+            "health",
+            "education",
+            "insurance",
+            "emi",
         }
     ]
 
@@ -154,7 +164,9 @@ def get_risk_questionnaire() -> RiskQuestionnaireResponse:
     return RiskQuestionnaireResponse(questions=questions)
 
 
-@router.post("/risk-profile", response_model=RiskProfileResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/risk-profile", response_model=RiskProfileResponse, status_code=status.HTTP_201_CREATED
+)
 def submit_risk_profile(
     data: RiskProfileCreate,
     db: Session = Depends(get_db),

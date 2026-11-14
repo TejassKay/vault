@@ -101,7 +101,7 @@ def upgrade() -> None:
         sa.Column("name", sa.String(length=100), nullable=False),
         sa.Column("current_value", sa.Numeric(precision=12, scale=2), nullable=False),
         sa.Column("as_of_date", sa.Date(), nullable=False),
-        sa.Column("liquidity", sa.String(length=10), nullable=False),
+        sa.Column("liquidity", sa.String(length=15), nullable=False),
         sa.Column("is_emergency_reserve", sa.Boolean(), nullable=False),
         sa.Column("source", sa.String(length=10), nullable=False),
         sa.CheckConstraint(

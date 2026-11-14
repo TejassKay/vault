@@ -113,7 +113,9 @@ def export_user_data(
             "user_id": current_user.user_id,
             "name": current_user.name,
             "email": current_user.email,
-            "consent_given_at": current_user.consent_given_at.isoformat() if current_user.consent_given_at else None,
+            "consent_given_at": current_user.consent_given_at.isoformat()
+            if current_user.consent_given_at
+            else None,
             "created_at": current_user.created_at.isoformat() if current_user.created_at else None,
         },
         "bills": [
@@ -140,7 +142,9 @@ def export_user_data(
                 "price": str(a.price) if a.price else None,
                 "purchase_date": a.purchase_date.isoformat() if a.purchase_date else None,
                 "warranty_months": a.warranty_months,
-                "warranty_end_date": a.warranty_end_date.isoformat() if a.warranty_end_date else None,
+                "warranty_end_date": a.warranty_end_date.isoformat()
+                if a.warranty_end_date
+                else None,
                 "estimated_value": str(a.estimated_value) if a.estimated_value else None,
             }
             for a in appliances

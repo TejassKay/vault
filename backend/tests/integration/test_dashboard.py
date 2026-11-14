@@ -13,12 +13,11 @@ from app.models.transaction import Transaction
 from app.models.user import User
 
 
-def test_fr11_dashboard_and_timeline_endpoints(
-    client: TestClient, db_session: Session
-) -> None:
+def test_fr11_dashboard_and_timeline_endpoints(client: TestClient, db_session: Session) -> None:
     today = date.today()
     # Create isolated user with uuid to ensure zero data collisions across runs
     import uuid
+
     email = f"dash_user_{uuid.uuid4().hex[:8]}@vault.local"
     user = User(
         name="Dash User",
@@ -97,9 +96,7 @@ def test_fr11_dashboard_and_timeline_endpoints(
     assert any(e["event_type"] == "emi" for e in time_data["events"])
 
 
-def test_fr30_export_and_delete_account(
-    client: TestClient, db_session: Session
-) -> None:
+def test_fr30_export_and_delete_account(client: TestClient, db_session: Session) -> None:
     """FR-30: Export user data and delete account with all cascade records."""
     # Create distinct user for deletion test
     email = "delete_me@vault.local"

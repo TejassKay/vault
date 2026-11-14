@@ -110,6 +110,7 @@ def build_timeline_events(
             except ValueError:
                 # Handle month-end issues (e.g. Feb 30 -> Feb 28)
                 import calendar
+
                 last_day = calendar.monthrange(year, month)[1]
                 candidate_date = date(year, month, min(due_day, last_day))
 
@@ -121,6 +122,7 @@ def build_timeline_events(
                 else:
                     month += 1
                 import calendar
+
                 last_day = calendar.monthrange(year, month)[1]
                 candidate_date = date(year, month, min(due_day, last_day))
 
@@ -156,7 +158,10 @@ def build_timeline_events(
                         amount=Decimal(str(s.get("cost") or 0)) if s.get("cost") else None,
                         urgency=determine_urgency(days_diff),
                         description=s.get("note") or f"Periodic maintenance for {app_name}",
-                        meta={"service_id": s.get("service_id"), "guidance": s.get("guidance_label")},
+                        meta={
+                            "service_id": s.get("service_id"),
+                            "guidance": s.get("guidance_label"),
+                        },
                     )
                 )
 

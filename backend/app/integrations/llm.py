@@ -161,7 +161,10 @@ class OpenAIProvider(LLMProvider):
             response = client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": "You explain financial recommendations without adding numbers or guarantees."},
+                    {
+                        "role": "system",
+                        "content": "You explain financial recommendations without adding numbers or guarantees.",
+                    },
                     {"role": "user", "content": prompt},
                 ],
                 temperature=0,

@@ -66,12 +66,24 @@ def _build_golden_scenario_inputs():
     for month in [8, 9, 10]:
         expenses.extend(
             [
-                ExpenseInput(amount=Decimal("18000"), category="Rent", txn_date=date(2026, month, 5)),
-                ExpenseInput(amount=Decimal("8000"), category="Groceries", txn_date=date(2026, month, 10)),
-                ExpenseInput(amount=Decimal("3000"), category="Utilities", txn_date=date(2026, month, 15)),
-                ExpenseInput(amount=Decimal("3000"), category="Transport", txn_date=date(2026, month, 20)),
-                ExpenseInput(amount=Decimal("4000"), category="Food-out", txn_date=date(2026, month, 22)),
-                ExpenseInput(amount=Decimal("4000"), category="Entertainment", txn_date=date(2026, month, 25)),
+                ExpenseInput(
+                    amount=Decimal("18000"), category="Rent", txn_date=date(2026, month, 5)
+                ),
+                ExpenseInput(
+                    amount=Decimal("8000"), category="Groceries", txn_date=date(2026, month, 10)
+                ),
+                ExpenseInput(
+                    amount=Decimal("3000"), category="Utilities", txn_date=date(2026, month, 15)
+                ),
+                ExpenseInput(
+                    amount=Decimal("3000"), category="Transport", txn_date=date(2026, month, 20)
+                ),
+                ExpenseInput(
+                    amount=Decimal("4000"), category="Food-out", txn_date=date(2026, month, 22)
+                ),
+                ExpenseInput(
+                    amount=Decimal("4000"), category="Entertainment", txn_date=date(2026, month, 25)
+                ),
             ]
         )
 
@@ -111,8 +123,14 @@ def test_fr21_golden_scenario_a_capacity() -> None:
     """
     today, incomes, expenses, liabilities, goals = _build_golden_scenario_inputs()
     holdings_a = [
-        HoldingInput(current_value=Decimal("45000"), is_emergency_reserve=True, as_of_date=date(2026, 11, 1)),
-        HoldingInput(current_value=Decimal("250000"), is_emergency_reserve=False, as_of_date=date(2026, 11, 1)),
+        HoldingInput(
+            current_value=Decimal("45000"), is_emergency_reserve=True, as_of_date=date(2026, 11, 1)
+        ),
+        HoldingInput(
+            current_value=Decimal("250000"),
+            is_emergency_reserve=False,
+            as_of_date=date(2026, 11, 1),
+        ),
     ]
 
     snap_a = compute_financial_snapshot(
@@ -153,8 +171,14 @@ def test_fr21_golden_scenario_b_capacity() -> None:
     """
     today, incomes, expenses, liabilities, goals = _build_golden_scenario_inputs()
     holdings_b = [
-        HoldingInput(current_value=Decimal("260000"), is_emergency_reserve=True, as_of_date=date(2026, 11, 1)),
-        HoldingInput(current_value=Decimal("250000"), is_emergency_reserve=False, as_of_date=date(2026, 11, 1)),
+        HoldingInput(
+            current_value=Decimal("260000"), is_emergency_reserve=True, as_of_date=date(2026, 11, 1)
+        ),
+        HoldingInput(
+            current_value=Decimal("250000"),
+            is_emergency_reserve=False,
+            as_of_date=date(2026, 11, 1),
+        ),
     ]
 
     snap_b = compute_financial_snapshot(
@@ -188,7 +212,9 @@ def test_fr21_hard_gate_high_interest_debt() -> None:
     """Spec 6.7: Any active liability with interest_rate >= 12% sets capacity to 0 and blocks."""
     today, incomes, expenses, _, goals = _build_golden_scenario_inputs()
     holdings_b = [
-        HoldingInput(current_value=Decimal("260000"), is_emergency_reserve=True, as_of_date=date(2026, 11, 1)),
+        HoldingInput(
+            current_value=Decimal("260000"), is_emergency_reserve=True, as_of_date=date(2026, 11, 1)
+        ),
     ]
     # High interest loan at 14.5%
     liabs_high = [
@@ -364,8 +390,14 @@ def test_fr23_golden_scenario_a_top_rec_emergency_fund() -> None:
     """Spec 6.6 & 6.9: Scenario A top recommendation must be Build emergency fund."""
     today, incomes, expenses, liabilities, goals = _build_golden_scenario_inputs()
     holdings_a = [
-        HoldingInput(current_value=Decimal("45000"), is_emergency_reserve=True, as_of_date=date(2026, 11, 1)),
-        HoldingInput(current_value=Decimal("250000"), is_emergency_reserve=False, as_of_date=date(2026, 11, 1)),
+        HoldingInput(
+            current_value=Decimal("45000"), is_emergency_reserve=True, as_of_date=date(2026, 11, 1)
+        ),
+        HoldingInput(
+            current_value=Decimal("250000"),
+            is_emergency_reserve=False,
+            as_of_date=date(2026, 11, 1),
+        ),
     ]
 
     snap_a = compute_financial_snapshot(
@@ -406,8 +438,14 @@ def test_fr23_golden_scenario_b_top_rec_invest_by_category() -> None:
     """Spec 6.6 & 6.9: Scenario B top recommendation must be Invest by category."""
     today, incomes, expenses, liabilities, goals = _build_golden_scenario_inputs()
     holdings_b = [
-        HoldingInput(current_value=Decimal("260000"), is_emergency_reserve=True, as_of_date=date(2026, 11, 1)),
-        HoldingInput(current_value=Decimal("250000"), is_emergency_reserve=False, as_of_date=date(2026, 11, 1)),
+        HoldingInput(
+            current_value=Decimal("260000"), is_emergency_reserve=True, as_of_date=date(2026, 11, 1)
+        ),
+        HoldingInput(
+            current_value=Decimal("250000"),
+            is_emergency_reserve=False,
+            as_of_date=date(2026, 11, 1),
+        ),
     ]
 
     snap_b = compute_financial_snapshot(
@@ -445,7 +483,9 @@ def test_fr23_max_six_recommendations_and_fields() -> None:
     """Spec 6.9: Maximum 6 recommendations returned; all required explainability fields present."""
     today, incomes, expenses, liabilities, goals = _build_golden_scenario_inputs()
     holdings_b = [
-        HoldingInput(current_value=Decimal("260000"), is_emergency_reserve=True, as_of_date=date(2026, 11, 1)),
+        HoldingInput(
+            current_value=Decimal("260000"), is_emergency_reserve=True, as_of_date=date(2026, 11, 1)
+        ),
     ]
     snap = compute_financial_snapshot(
         income_sources=incomes,
@@ -512,9 +552,7 @@ def test_fr25_number_guard_rejects_invented_number() -> None:
     }
     allowed = collect_allowed_numbers(plan_data)
 
-    hallucinated_text = (
-        "Based on your income of ₹85,000, you can easily save ₹99,999 next month."
-    )
+    hallucinated_text = "Based on your income of ₹85,000, you can easily save ₹99,999 next month."
     is_valid, msg = number_guard(hallucinated_text, allowed)
     assert is_valid is False
     assert "99999" in msg or "not present" in msg
@@ -535,7 +573,9 @@ def test_fr25_explainer_template_fallback_execution() -> None:
     """Spec 6.10: Template explanation fills in on fallback and sets explanation_source = template."""
     today, incomes, expenses, liabilities, goals = _build_golden_scenario_inputs()
     holdings_b = [
-        HoldingInput(current_value=Decimal("260000"), is_emergency_reserve=True, as_of_date=date(2026, 11, 1)),
+        HoldingInput(
+            current_value=Decimal("260000"), is_emergency_reserve=True, as_of_date=date(2026, 11, 1)
+        ),
     ]
     snap = compute_financial_snapshot(
         income_sources=incomes,

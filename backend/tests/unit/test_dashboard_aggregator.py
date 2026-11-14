@@ -120,7 +120,11 @@ def test_build_dashboard_summary_aggregation() -> None:
     ]
 
     events = build_timeline_events([], [], [], appliances, goals, today)
-    top_rec = {"priority_rank": 1, "rec_type": "EMERGENCY_FUND_LOW", "action": "Build emergency reserve"}
+    top_rec = {
+        "priority_rank": 1,
+        "rec_type": "EMERGENCY_FUND_LOW",
+        "action": "Build emergency reserve",
+    }
 
     dash = build_dashboard_summary(
         snapshot=snap,
