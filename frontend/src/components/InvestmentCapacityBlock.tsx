@@ -41,7 +41,7 @@ export const InvestmentCapacityBlock: React.FC<InvestmentCapacityBlockProps> = (
             <span className="text-[11px] font-mono tracking-widest uppercase text-canvas/65 block">
               Investment Capacity
             </span>
-            <span className="text-xs text-canvas/70 font-sans">Monthly investable surplus after gates & buffers</span>
+            <span className="text-xs text-canvas/70 font-sans">Monthly investable surplus after safety priorities & buffers</span>
           </div>
           <span
             className={`text-xs font-mono px-2 py-0.5 rounded-sm border uppercase tracking-wide ${
@@ -82,15 +82,15 @@ export const InvestmentCapacityBlock: React.FC<InvestmentCapacityBlockProps> = (
                 <span className="text-xs font-mono text-muted-ink">/ month</span>
               </div>
               {status === 'blocked' && capacityIfClear !== null && capacityIfClear !== undefined && (
-                <p className="text-xs font-sans text-liability mt-1.5 flex items-center gap-1.5">
-                  <span>Capacity if gates cleared:</span>
-                  <Money amount={capacityIfClear} className="font-semibold text-liability" />
+                <p className="text-xs font-sans text-canvas/85 mt-1.5 flex items-center gap-1.5">
+                  <span>Capacity once priorities cleared:</span>
+                  <Money amount={capacityIfClear} className="font-semibold text-canvas" />
                 </p>
               )}
               {reasonCodes.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {reasonCodes.map((rc, i) => (
-                    <span key={i} className="text-[11px] font-mono text-liability bg-liability/20 border border-liability/40 px-2 py-0.5 rounded-sm">
+                    <span key={i} className="text-[11px] font-mono text-canvas bg-liability/30 border border-liability/60 px-2 py-0.5 rounded-sm">
                       {getLabel(rc)}
                     </span>
                   ))}

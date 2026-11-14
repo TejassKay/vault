@@ -24,7 +24,7 @@ export const CODE_LABELS = {
 
   // Statuses
   ok: 'Healthy',
-  blocked: 'Safety Gate Active',
+  blocked: 'Paused: Priority First',
   insufficient_data: 'More Data Needed',
   needs_review: 'Review Needed',
   parsed: 'Verified',
