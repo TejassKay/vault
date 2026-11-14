@@ -247,7 +247,7 @@ export const Advisor: React.FC = () => {
                 <StatusPill label="SUSTAINABLE" variant="growth" />
               )}
               {capacity?.status === 'blocked' && (
-                <StatusPill label="BLOCKED BY GATE" variant="liability" />
+                <StatusPill label="PAUSED: PRIORITY FIRST" variant="liability" />
               )}
               {capacity?.status === 'insufficient_data' && (
                 <StatusPill label="DATA NEEDED" variant="neutral" />
@@ -273,7 +273,7 @@ export const Advisor: React.FC = () => {
                     className="inline-flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded-sm bg-liability/10 border border-liability/30 text-liability"
                   >
                     <ShieldAlert className="w-3 h-3" />
-                    Gate: {getLabel(code)}
+                    {getLabel(code)}
                   </span>
                 ))}
               </div>
@@ -281,7 +281,7 @@ export const Advisor: React.FC = () => {
 
             <p className="text-xs font-sans text-muted-ink mt-2 leading-relaxed">
               {capacity?.status === 'blocked'
-                ? 'Capacity is restricted to ₹0.00 until safety thresholds (emergency fund or high-interest liabilities) are resolved.'
+                ? 'New investing is paused at ₹0.00 until your emergency fund reaches 3 months and high-interest debt (≥12%) is cleared.'
                 : 'Sustainable surplus after goal contributions, safety reserves, and a 10% risk buffer.'}
             </p>
           </div>
