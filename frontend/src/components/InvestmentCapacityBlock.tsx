@@ -34,7 +34,7 @@ export const InvestmentCapacityBlock: React.FC<InvestmentCapacityBlockProps> = (
   const isGoalStep = (step: CapacityStep) => /goal/i.test(step.name);
 
   return (
-    <div className={`bg-ink text-canvas rounded-sm p-6 flex flex-col justify-between border border-gold ${className}`}>
+    <div className={`vault-capacity-card rounded-sm p-6 flex flex-col justify-between ${className}`}>
       <div>
         <div className="flex items-center justify-between border-b border-gold/40 pb-3">
           <div>
@@ -110,10 +110,10 @@ export const InvestmentCapacityBlock: React.FC<InvestmentCapacityBlockProps> = (
               {nonZeroSteps.map((step, idx) => {
                 const widthPct = (Math.abs(Number(step.value)) / totalValue) * 100;
                 const barColor = isObligationStep(step)
-                  ? 'bg-liability'
+                  ? 'vault-capacity-bar-obligation'
                   : isGoalStep(step)
-                  ? 'bg-growth/75'
-                  : 'bg-growth';
+                  ? 'vault-capacity-bar-goal'
+                  : 'vault-capacity-bar-surplus';
                 return (
                   <div
                     key={idx}
@@ -126,15 +126,15 @@ export const InvestmentCapacityBlock: React.FC<InvestmentCapacityBlockProps> = (
             </div>
             <div className="flex flex-wrap items-center gap-4 pt-1 text-[10px] font-mono text-canvas/70">
               <span className="inline-flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-xs bg-growth inline-block" />
+                <span className="vault-capacity-bar-surplus w-2.5 h-2.5 rounded-xs inline-block" />
                 Surplus
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-xs bg-growth/75 inline-block" />
+                <span className="vault-capacity-bar-goal w-2.5 h-2.5 rounded-xs inline-block" />
                 Goals
               </span>
               <span className="inline-flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-xs bg-liability inline-block" />
+                <span className="vault-capacity-bar-obligation w-2.5 h-2.5 rounded-xs inline-block" />
                 Obligations
               </span>
             </div>

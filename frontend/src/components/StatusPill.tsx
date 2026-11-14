@@ -14,15 +14,15 @@ export const StatusPill: React.FC<StatusPillProps> = ({
   className = '',
 }) => {
   const variantStyles = {
-    growth: 'text-growth bg-growth/[0.08] border-growth/35',
-    liability: 'text-liability bg-liability/[0.08] border-liability/35',
-    gold: 'text-ink bg-gold/[0.08] border-gold/50',
-    neutral: 'text-muted-ink bg-canvas border-border',
+    growth: 'vault-pill--growth',
+    liability: 'vault-pill--liability',
+    gold: 'vault-pill--gold',
+    neutral: 'vault-pill--neutral',
   }[variant];
 
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 text-xs font-mono tracking-wide uppercase border rounded-sm font-medium ${variantStyles} ${className}`}
+      className={`vault-pill inline-flex items-center px-2 py-0.5 text-xs tracking-wide rounded-sm font-medium ${variantStyles} ${className}`}
     >
       {label}
     </span>

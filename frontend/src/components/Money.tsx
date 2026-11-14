@@ -34,7 +34,7 @@ export const Money: React.FC<MoneyProps> = ({ amount, className = '', showSign =
   return (
     <span
       className={`font-mono tabular-nums ${
-        isNegative ? 'text-liability' : isPositive ? 'text-growth' : ''
+        isNegative ? 'vault-amount--negative' : isPositive ? 'vault-amount--positive' : ''
       } ${className}`}
       style={{ fontVariantNumeric: 'tabular-nums' }}
     >

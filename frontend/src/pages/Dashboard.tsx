@@ -323,9 +323,9 @@ export const Dashboard: React.FC = () => {
                           <span>{g.title}</span>
                           <span className="font-mono text-xs">{g.progress_percent}%</span>
                         </div>
-                        <div className="w-full bg-surface border border-border rounded-sm h-2 overflow-hidden">
+                        <div className="vault-progress-track w-full rounded-sm h-2 overflow-hidden">
                           <div
-                            className="bg-growth h-full transition-all"
+                            className="vault-progress-fill h-full transition-all"
                             style={{
                               width: `${Math.min(100, g.progress_percent)}%`,
                               minWidth: g.progress_percent > 0 ? '6px' : undefined,
