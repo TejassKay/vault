@@ -11,6 +11,12 @@ from sqlalchemy.orm import Session
 
 from app.core.security import create_access_token, hash_password
 from app.engines.budget_engine import compute_budget_nudge
+from app.engines.risk_engine import (
+    CATEGORY_DEBT,
+    CATEGORY_EQUITY,
+    CATEGORY_GOLD,
+    CATEGORY_LIQUID,
+)
 from app.models.appliance import Appliance
 from app.models.goal import Goal
 from app.models.holding import Holding
@@ -102,11 +108,11 @@ def test_demo_ledgers_vartika24_and_isha25_endpoints(
     v_recs = v_rec_resp.json()["recommendations"]
     assert [r["rec_type"] for r in v_recs] == ["INVEST_BY_CATEGORY", "REVIEW_SCHEDULE"]
 
-    v_alloc = v_recs[0]["inputs_snapshot"]["allocation"]
-    assert Decimal(str(v_alloc["equity"])) == Decimal("4050.00")
-    assert Decimal(str(v_alloc["debt"])) == Decimal("2835.00")
-    assert Decimal(str(v_alloc["gold"])) == Decimal("810.00")
-    assert Decimal(str(v_alloc["liquid"])) == Decimal("405.00")
+    v_alloc = v_recs[0]["inputs_snapshot"]["category_allocation"]
+    assert Decimal(str(v_alloc[CATEGORY_EQUITY])) == Decimal("4050.00")
+    assert Decimal(str(v_alloc[CATEGORY_DEBT])) == Decimal("2835.00")
+    assert Decimal(str(v_alloc[CATEGORY_GOLD])) == Decimal("810.00")
+    assert Decimal(str(v_alloc[CATEGORY_LIQUID])) == Decimal("405.00")
 
     v_tl = client.get("/timeline", headers=v_headers)
     assert v_tl.status_code == 200
@@ -191,7 +197,9 @@ def test_demo_ledgers_vartika24_and_isha25_endpoints(
     ]
     i_nudge = compute_budget_nudge(i_mtd, i_prev, REF_TODAY)
     assert i_nudge.should_show is True
-    assert i_nudge.message is not None and "on track to exceed" in i_nudge.message.lower()
+    assert i_nudge.message is not None
+    assert "projected spending" in i_nudge.message.lower()
+    assert "higher than last month's" in i_nudge.message.lower()
     assert i_nudge.largest_category_increase == "Shopping"
     assert "Shopping" in i_nudge.message
 
