@@ -9,6 +9,32 @@ import {
 } from '../api/assets';
 import { getLabel } from '../lib/labels.js';
 
+function formatToIsoDate(dStr: string): string {
+  if (!dStr) return '';
+  const cleaned = dStr.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(cleaned)) return cleaned;
+  if (cleaned.includes('/')) {
+    const parts = cleaned.split('/');
+    if (parts.length === 3) {
+      const year = parts[2].length === 2 ? `20${parts[2]}` : parts[2];
+      return `${year}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+    }
+  }
+  const months: Record<string, string> = {
+    jan: '01', feb: '02', mar: '03', apr: '04', may: '05', jun: '06',
+    jul: '07', aug: '08', sep: '09', oct: '10', nov: '11', dec: '12',
+  };
+  const match = cleaned.match(/^(\d{1,2})[-\s]([a-zA-Z]{3,9})[-\s](\d{2,4})$/);
+  if (match) {
+    const day = match[1].padStart(2, '0');
+    const monStr = match[2].slice(0, 3).toLowerCase();
+    const mon = months[monStr] || '01';
+    const year = match[3].length === 2 ? `20${match[3]}` : match[3];
+    return `${year}-${mon}-${day}`;
+  }
+  return '';
+}
+
 export const Assets: React.FC = () => {
   const [appliances, setAppliances] = useState<ApplianceResponse[]>([]);
   const [loading, setLoading] = useState(false);
@@ -67,15 +93,26 @@ export const Assets: React.FC = () => {
       setSeller(String(ext.seller?.value || ''));
       setPrice(ext.price?.value ? String(ext.price.value) : '');
 
-      let pDate = String(ext.purchase_date?.value || '');
-      if (pDate.includes('/')) {
-        const parts = pDate.split('/');
-        if (parts.length === 3) {
-          pDate = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-        }
-      }
-      setPurchaseDate(pDate || new Date().toISOString().split('T')[0]);
+      const rawPDate = String(ext.purchase_date?.value || '');
+      const isoPDate = formatToIsoDate(rawPDate);
+      setPurchaseDate(isoPDate || new Date().toISOString().split('T')[0]);
       setWarrantyMonths(String(ext.warranty_months?.value || '12'));
+
+      // Pre-fill Category selection from extraction
+      const catVal = String(ext.category?.value || '').toLowerCase();
+      if (catVal.includes('refrigerator') || catVal.includes('fridge')) {
+        setCategoryId('2');
+      } else if (catVal.includes('washing') || catVal.includes('washer')) {
+        setCategoryId('3');
+      } else if (catVal.includes('purifier') || catVal.includes('ro') || catVal.includes('water')) {
+        setCategoryId('4');
+      } else if (catVal.includes('geyser') || catVal.includes('heater')) {
+        setCategoryId('5');
+      } else if (catVal.includes('chimney') || catVal.includes('hood')) {
+        setCategoryId('6');
+      } else if (catVal.includes('ac') || catVal.includes('air conditioner')) {
+        setCategoryId('1');
+      }
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
@@ -142,6 +179,33 @@ export const Assets: React.FC = () => {
     }
   };
 
+  const renderFieldConf = (fieldName: string) => {
+    const f = extractedBill?.extraction_json?.[fieldName];
+    if (!f) return null;
+    const conf = f.confidence ?? 0.0;
+    if (conf < 0.6) {
+      return (
+        <span className="ml-1.5 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800 border border-amber-200">
+          Please check ({(conf * 100).toFixed(0)}%)
+        </span>
+      );
+    }
+    return (
+      <span className="ml-1.5 text-[11px] font-normal text-slate-500">
+        ({(conf * 100).toFixed(0)}% conf)
+      </span>
+    );
+  };
+
+  const getFieldInputClass = (fieldName: string) => {
+    const f = extractedBill?.extraction_json?.[fieldName];
+    const conf = f?.confidence ?? 0.0;
+    if (conf < 0.6) {
+      return 'w-full text-sm p-2 border border-amber-400 bg-amber-50/30 focus:border-amber-500 rounded-lg transition-colors';
+    }
+    return 'w-full text-sm p-2 border border-slate-300 rounded-lg bg-white transition-colors';
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -201,89 +265,99 @@ export const Assets: React.FC = () => {
           <form onSubmit={handleConfirm} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">
-                Product Name * {extractedBill.extraction_json?.product_name && (
-                  <span className="text-xs font-normal text-slate-500">
-                    (Conf: {(extractedBill.extraction_json.product_name.confidence * 100).toFixed(0)}%)
-                  </span>
-                )}
+                Product Name * {renderFieldConf('product_name')}
               </label>
               <input
                 type="text"
                 value={productName}
                 onChange={(e) => setProductName(e.target.value)}
-                className="w-full text-sm p-2 border border-slate-300 rounded-lg bg-white"
+                className={getFieldInputClass('product_name')}
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Brand</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Brand {renderFieldConf('brand')}
+              </label>
               <input
                 type="text"
                 value={brand}
                 onChange={(e) => setBrand(e.target.value)}
-                className="w-full text-sm p-2 border border-slate-300 rounded-lg bg-white"
+                className={getFieldInputClass('brand')}
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Model Number</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Model Number {renderFieldConf('model_number')}
+              </label>
               <input
                 type="text"
                 value={modelNumber}
                 onChange={(e) => setModelNumber(e.target.value)}
-                className="w-full text-sm p-2 border border-slate-300 rounded-lg bg-white"
+                className={getFieldInputClass('model_number')}
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Seller</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Seller {renderFieldConf('seller')}
+              </label>
               <input
                 type="text"
                 value={seller}
                 onChange={(e) => setSeller(e.target.value)}
-                className="w-full text-sm p-2 border border-slate-300 rounded-lg bg-white"
+                className={getFieldInputClass('seller')}
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Price (₹)</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Price (₹) {renderFieldConf('price')}
+              </label>
               <input
                 type="number"
                 step="0.01"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
-                className="w-full text-sm p-2 border border-slate-300 rounded-lg bg-white"
+                className={getFieldInputClass('price')}
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Purchase Date *</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Purchase Date * {renderFieldConf('purchase_date')}
+              </label>
               <input
                 type="date"
                 value={purchaseDate}
                 onChange={(e) => setPurchaseDate(e.target.value)}
-                className="w-full text-sm p-2 border border-slate-300 rounded-lg bg-white"
+                className={getFieldInputClass('purchase_date')}
                 required
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Warranty (Months)</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Warranty (Months) {renderFieldConf('warranty_months')}
+              </label>
               <input
                 type="number"
                 value={warrantyMonths}
                 onChange={(e) => setWarrantyMonths(e.target.value)}
-                className="w-full text-sm p-2 border border-slate-300 rounded-lg bg-white"
+                className={getFieldInputClass('warranty_months')}
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">Category (for Service Intervals)</label>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                Category (for Service Intervals) {renderFieldConf('category')}
+              </label>
               <select
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
-                className="w-full text-sm p-2 border border-slate-300 rounded-lg bg-white"
+                className={getFieldInputClass('category')}
               >
                 <option value="1">Air Conditioner (6mo interval)</option>
                 <option value="2">Refrigerator (12mo interval)</option>
