@@ -1,3 +1,5 @@
+import { getFriendlyErrorMessage } from '../lib/labels.js';
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 export interface HealthResponse {
@@ -6,16 +8,27 @@ export interface HealthResponse {
   version: string;
 }
 
+let inMemoryToken: string | null = null;
+
 export function getAuthToken(): string | null {
-  return localStorage.getItem('vault_token');
+  if (typeof localStorage !== 'undefined') {
+    return localStorage.getItem('vault_token') || inMemoryToken;
+  }
+  return inMemoryToken;
 }
 
 export function setAuthToken(token: string): void {
-  localStorage.setItem('vault_token', token);
+  inMemoryToken = token;
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem('vault_token', token);
+  }
 }
 
 export function removeAuthToken(): void {
-  localStorage.removeItem('vault_token');
+  inMemoryToken = null;
+  if (typeof localStorage !== 'undefined') {
+    localStorage.removeItem('vault_token');
+  }
 }
 
 export async function apiRequest<T>(
@@ -44,7 +57,7 @@ export async function apiRequest<T>(
     } catch {
       // ignore json parse error
     }
-    throw new Error(errorDetail);
+    throw new Error(getFriendlyErrorMessage(errorDetail));
   }
 
   return response.json();

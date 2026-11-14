@@ -9,13 +9,21 @@ class UserSignup(BaseModel):
     password: str = Field(..., min_length=8)
     consent: bool = Field(
         ...,
-        description="FR-1: Mandatory user consent to personal finance & document data processing",
+        description="Mandatory user consent to personal finance & document data processing",
     )
 
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    # Accepts email or username (e.g. "Tejas23" or "tejas23@vault.local")
+    username: str | None = None
+    email: str | None = None
     password: str
+
+
+class GoogleAuthRequest(BaseModel):
+    credential: str | None = None
+    email: str | None = None
+    name: str | None = None
 
 
 class TokenResponse(BaseModel):

@@ -181,18 +181,18 @@ export const Finances: React.FC = () => {
 
       {nudgeMessage && (
         <div className="p-4 bg-amber-50 border border-amber-200 text-amber-800 rounded-lg text-sm flex justify-between items-center">
-          <span>💡 <strong>Budgeting Nudge (FR-8):</strong> {nudgeMessage}</span>
+          <span>💡 <strong>Budgeting Nudge:</strong> {nudgeMessage}</span>
           <button onClick={() => setNudgeMessage(null)} className="text-xs text-amber-700 hover:text-amber-900">
             Dismiss
           </button>
         </div>
       )}
 
-      {/* Snapshot Cards (FR-10, FR-18 - FR-20) */}
+      {/* Snapshot Cards */}
       {snapshot && (
         <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
           <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold text-slate-900">Financial Health Snapshot (FR-10)</h2>
+            <h2 className="text-lg font-semibold text-slate-900">Financial Health Snapshot</h2>
             {snapshot.is_stale && (
               <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
                 Stale Data Indicator
@@ -236,14 +236,14 @@ export const Finances: React.FC = () => {
               </div>
 
               <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                <div className="text-xs text-slate-500 font-medium">Net Worth (FR-18)</div>
+                <div className="text-xs text-slate-500 font-medium">Net Worth</div>
                 <div className="text-lg font-bold text-slate-900 mt-1">
                   ₹{Number(snapshot.net_worth).toLocaleString('en-IN')}
                 </div>
               </div>
 
               <div className="p-3 bg-slate-50 rounded-lg border border-slate-100">
-                <div className="text-xs text-slate-500 font-medium">Emergency Fund (FR-19)</div>
+                <div className="text-xs text-slate-500 font-medium">Emergency Fund</div>
                 <div className="text-lg font-bold text-slate-900 mt-1">
                   {snapshot.emergency_coverage_months} <span className="text-xs font-normal text-slate-400">mo</span>
                 </div>
@@ -298,9 +298,9 @@ export const Finances: React.FC = () => {
           </div>
         </div>
 
-        {/* Transactions (FR-7) */}
+        {/* Transactions */}
         <div className="bg-white p-5 rounded-xl border border-slate-200 space-y-4">
-          <h3 className="font-semibold text-slate-900">Record Transaction (FR-7)</h3>
+          <h3 className="font-semibold text-slate-900">Record Transaction</h3>
           <form onSubmit={handleAddTxn} className="flex gap-2">
             <select
               value={txnType}
