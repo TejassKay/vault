@@ -25,7 +25,9 @@ class RiskQuestionnaireResponse(BaseModel):
 
 
 class RiskProfileCreate(BaseModel):
-    answers: dict[str, Any] = Field(..., description="Mapping of question id or q1..q8 to score (1-4)")
+    answers: dict[str, Any] = Field(
+        ..., description="Mapping of question id or q1..q8 to score (1-4)"
+    )
 
 
 class RiskProfileResponse(BaseModel):

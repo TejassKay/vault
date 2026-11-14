@@ -71,12 +71,60 @@ def seed_demo_user(db: Session, scenario: str = "A") -> User:
 
     # 2. Expenses across Aug, Sep, Oct 2026
     for m in [8, 9, 10]:
-        db.add(Transaction(user_id=uid, type="expense", amount=Decimal("18000.00"), category="Rent", txn_date=date(2026, m, 5)))
-        db.add(Transaction(user_id=uid, type="expense", amount=Decimal("8000.00"), category="Groceries", txn_date=date(2026, m, 10)))
-        db.add(Transaction(user_id=uid, type="expense", amount=Decimal("3000.00"), category="Utilities", txn_date=date(2026, m, 15)))
-        db.add(Transaction(user_id=uid, type="expense", amount=Decimal("3000.00"), category="Transport", txn_date=date(2026, m, 20)))
-        db.add(Transaction(user_id=uid, type="expense", amount=Decimal("4000.00"), category="Food-out", txn_date=date(2026, m, 22)))
-        db.add(Transaction(user_id=uid, type="expense", amount=Decimal("4000.00"), category="Entertainment", txn_date=date(2026, m, 25)))
+        db.add(
+            Transaction(
+                user_id=uid,
+                type="expense",
+                amount=Decimal("18000.00"),
+                category="Rent",
+                txn_date=date(2026, m, 5),
+            )
+        )
+        db.add(
+            Transaction(
+                user_id=uid,
+                type="expense",
+                amount=Decimal("8000.00"),
+                category="Groceries",
+                txn_date=date(2026, m, 10),
+            )
+        )
+        db.add(
+            Transaction(
+                user_id=uid,
+                type="expense",
+                amount=Decimal("3000.00"),
+                category="Utilities",
+                txn_date=date(2026, m, 15),
+            )
+        )
+        db.add(
+            Transaction(
+                user_id=uid,
+                type="expense",
+                amount=Decimal("3000.00"),
+                category="Transport",
+                txn_date=date(2026, m, 20),
+            )
+        )
+        db.add(
+            Transaction(
+                user_id=uid,
+                type="expense",
+                amount=Decimal("4000.00"),
+                category="Food-out",
+                txn_date=date(2026, m, 22),
+            )
+        )
+        db.add(
+            Transaction(
+                user_id=uid,
+                type="expense",
+                amount=Decimal("4000.00"),
+                category="Entertainment",
+                txn_date=date(2026, m, 25),
+            )
+        )
 
     # 3. Liability: Personal Loan ₹2,40,000 @ 11.00%, EMI ₹10,000
     db.add(

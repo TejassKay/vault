@@ -13,7 +13,9 @@ from app.models.transaction import Transaction
 from app.models.user import User
 
 
-def test_fr22_risk_questionnaire_and_profile_flow(client: TestClient, auth_headers: dict[str, str]) -> None:
+def test_fr22_risk_questionnaire_and_profile_flow(
+    client: TestClient, auth_headers: dict[str, str]
+) -> None:
     # 1. Get questionnaire
     q_resp = client.get("/risk-questionnaire", headers=auth_headers)
     assert q_resp.status_code == 200

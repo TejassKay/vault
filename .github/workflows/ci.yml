@@ -49,11 +49,19 @@ jobs:
           ruff check backend/
           ruff format --check backend/
 
+      - name: Run database migrations
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/vault_test
+          PYTHONPATH: backend
+        run: |
+          alembic -c backend/alembic.ini upgrade head
+
       - name: Run backend tests (Pytest)
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/vault_test
           VAULT_LLM_PROVIDER: mock
           JWT_SECRET: test-secret-ci-key-vault-2026
+          PYTHONPATH: backend
         run: |
           pytest backend/tests -v
 

@@ -53,7 +53,16 @@ router = APIRouter(tags=["overview"])
 
 def _extract_user_context(
     db: Session, user_id: int, today: date
-) -> tuple[Any, list[GoalInput], list[LiabilityInput], list[HoldingInput], list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
+) -> tuple[
+    Any,
+    list[GoalInput],
+    list[LiabilityInput],
+    list[HoldingInput],
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+]:
     """Load DB records for a user into engine-ready structures."""
     sources = db.query(IncomeSource).filter(IncomeSource.user_id == user_id).all()
     inc_inputs = [
@@ -175,7 +184,16 @@ def _extract_user_context(
         today=today,
     )
 
-    return snapshot, goal_inputs, liab_inputs, hold_inputs, liab_dicts, goal_dicts, appliance_dicts, service_dicts
+    return (
+        snapshot,
+        goal_inputs,
+        liab_inputs,
+        hold_inputs,
+        liab_dicts,
+        goal_dicts,
+        appliance_dicts,
+        service_dicts,
+    )
 
 
 @router.get("/dashboard", response_model=DashboardResponse)
