@@ -143,6 +143,13 @@ def compute_expenses(
     return round_cur(essential_sum / m_div), round_cur(discretionary_sum / m_div)
 
 
+def _month_start_offset(month_start: date, offset: int) -> date:
+    """Return the 1st of the calendar month shifted by `offset` months."""
+    total_months = month_start.year * 12 + (month_start.month - 1) + offset
+    year, month_idx = divmod(total_months, 12)
+    return date(year, month_idx + 1, 1)
+
+
 def compute_financial_snapshot(
     income_sources: list[IncomeInput],
     income_txns: list[ExpenseInput],
@@ -186,7 +193,15 @@ def compute_financial_snapshot(
 
     # We know monthly_income is not None
     assert monthly_income is not None
-    essential, discretionary = compute_expenses(valid_expenses, expense_months_available)
+    current_month_start = date(today.year, today.month, 1)
+    window_start = _month_start_offset(current_month_start, -3)
+    window_expenses = [
+        t for t in valid_expenses if window_start <= t.txn_date < current_month_start
+    ]
+    scoped_expenses = window_expenses if window_expenses else valid_expenses
+    distinct_months = len({(t.txn_date.year, t.txn_date.month) for t in scoped_expenses})
+    months_count = max(1, min(expense_months_available, distinct_months))
+    essential, discretionary = compute_expenses(scoped_expenses, months_count)
     total_expenses = essential + discretionary
 
     # Debt payments
