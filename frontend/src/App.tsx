@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { Dashboard } from './pages/Dashboard';
 import { Health } from './pages/Health';
+import { Assets } from './pages/Assets';
 
 export const App: React.FC = () => {
   return (
@@ -11,14 +12,7 @@ export const App: React.FC = () => {
         <Route path="/" element={<Layout />}>
           <Route index element={<Dashboard />} />
           <Route path="health" element={<Health />} />
-          <Route
-            path="assets"
-            element={
-              <div className="p-8 text-center text-slate-500 bg-white rounded-xl border border-slate-200">
-                Assets & Bills module will be implemented in Phase 2.
-              </div>
-            }
-          />
+          <Route path="assets" element={<Assets />} />
           <Route
             path="finances"
             element={

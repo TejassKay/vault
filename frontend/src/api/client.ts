@@ -6,10 +6,50 @@ export interface HealthResponse {
   version: string;
 }
 
-export async function fetchHealth(): Promise<HealthResponse> {
-  const response = await fetch(`${API_BASE_URL}/health`);
-  if (!response.ok) {
-    throw new Error(`Health check failed with status: ${response.status}`);
+export function getAuthToken(): string | null {
+  return localStorage.getItem('vault_token');
+}
+
+export function setAuthToken(token: string): void {
+  localStorage.setItem('vault_token', token);
+}
+
+export function removeAuthToken(): void {
+  localStorage.removeItem('vault_token');
+}
+
+export async function apiRequest<T>(
+  endpoint: string,
+  options: RequestInit = {}
+): Promise<T> {
+  const token = getAuthToken();
+  const headers = new Headers(options.headers || {});
+
+  if (token && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${token}`);
   }
+
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    ...options,
+    headers,
+  });
+
+  if (!response.ok) {
+    let errorDetail = `Request failed with status: ${response.status}`;
+    try {
+      const errorJson = await response.json();
+      if (errorJson.detail) {
+        errorDetail = typeof errorJson.detail === 'string' ? errorJson.detail : JSON.stringify(errorJson.detail);
+      }
+    } catch {
+      // ignore json parse error
+    }
+    throw new Error(errorDetail);
+  }
+
   return response.json();
+}
+
+export async function fetchHealth(): Promise<HealthResponse> {
+  return apiRequest<HealthResponse>('/health');
 }
