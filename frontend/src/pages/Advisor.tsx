@@ -25,7 +25,7 @@ import {
   submitRiskProfile,
   updateRecommendationStatus,
 } from '../api/advisor';
-import { getLabel } from '../lib/labels.js';
+import { formatSnapshotInput, getLabel } from '../lib/labels.js';
 import Money from '../components/Money';
 import Card from '../components/Card';
 import StatusPill from '../components/StatusPill';
@@ -424,7 +424,7 @@ export const Advisor: React.FC = () => {
                             : 'bg-surface hover:bg-canvas text-ink border-border'
                         }`}
                       >
-                        <Check className="w-3 h-3 text-growth" />
+                        <Check className={`w-3 h-3 ${rec.status === 'accepted' ? 'text-surface' : 'text-growth'}`} />
                         Accept
                       </button>
                       <button
@@ -436,7 +436,7 @@ export const Advisor: React.FC = () => {
                             : 'bg-surface hover:bg-canvas text-ink border-border'
                         }`}
                       >
-                        <XCircle className="w-3 h-3 text-liability" />
+                        <XCircle className={`w-3 h-3 ${rec.status === 'rejected' ? 'text-surface' : 'text-liability'}`} />
                         Dismiss
                       </button>
                     </div>
@@ -487,18 +487,15 @@ export const Advisor: React.FC = () => {
                   </span>
                   {selectedRec.inputs_snapshot && Object.keys(selectedRec.inputs_snapshot).length > 0 ? (
                     <div className="bg-canvas border border-border rounded-sm p-2.5 space-y-1.5 font-mono text-[11px]">
-                      {Object.entries(selectedRec.inputs_snapshot).map(([key, val]) => (
-                        <div key={key} className="flex justify-between text-ink border-b border-border/40 pb-1 last:border-b-0 last:pb-0">
-                          <span className="text-muted-ink">{key.replace(/_/g, ' ')}:</span>
-                          <span className="font-medium">
-                            {typeof val === 'number' ? (
-                              <Money amount={val} />
-                            ) : (
-                              String(val)
-                            )}
-                          </span>
-                        </div>
-                      ))}
+                      {Object.entries(selectedRec.inputs_snapshot).map(([key, val]) => {
+                        const formatted = formatSnapshotInput(key, val);
+                        return (
+                          <div key={key} className="flex justify-between text-ink border-b border-border/40 pb-1 last:border-b-0 last:pb-0">
+                            <span className="text-muted-ink">{formatted.label}:</span>
+                            <span className="font-medium">{formatted.value}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   ) : (
                     <div className="bg-canvas border border-border rounded-sm p-2 text-muted-ink font-mono text-[11px]">
@@ -572,7 +569,7 @@ export const Advisor: React.FC = () => {
             <div className="p-5 border-b border-border flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-mono uppercase tracking-wider text-muted-ink block">
-                  Deterministic Risk Profiler (FR-22)
+                  Deterministic Risk Profiler
                 </span>
                 <h3 className="text-xl font-serif text-ink mt-0.5">
                   Risk Tolerance & Capacity Assessment

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   Shield,
@@ -14,6 +14,8 @@ import {
   Menu,
   X,
   Search,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import CommandBar from './CommandBar';
@@ -34,6 +36,36 @@ export const Layout: React.FC = () => {
   const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [commandBarOpen, setCommandBarOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('vault_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleCollapsed = () => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('vault_sidebar_collapsed', String(next));
+      } catch {
+        // Ignore storage errors
+      }
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        toggleCollapsed();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -43,22 +75,22 @@ export const Layout: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-canvas text-ink font-sans selection:bg-gold/20 selection:text-ink">
       {/* Mobile Top Header */}
-      <header className="md:hidden flex items-center justify-between p-4 bg-surface border-b border-border">
+      <header className="md:hidden flex items-center justify-between p-4 bg-ink text-canvas border-b border-canvas/15">
         <div className="flex items-center gap-2.5">
-          <Shield className="w-5 h-5 text-growth" />
-          <span className="font-serif text-lg tracking-wide font-medium text-ink">VAULT Ledger</span>
+          <Shield className="w-5 h-5 text-gold" />
+          <span className="font-serif text-lg tracking-wide font-medium text-canvas">VAULT Ledger</span>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setCommandBarOpen(true)}
-            className="p-1.5 border border-border rounded-sm text-ink hover:bg-canvas"
+            className="p-1.5 border border-canvas/20 rounded-sm text-canvas hover:bg-canvas/10"
             aria-label="Open command bar"
           >
             <Search className="w-4 h-4" />
           </button>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-1.5 border border-border rounded-sm text-ink hover:bg-canvas"
+            className="p-1.5 border border-canvas/20 rounded-sm text-canvas hover:bg-canvas/10"
             aria-label="Toggle navigation menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -66,37 +98,56 @@ export const Layout: React.FC = () => {
         </div>
       </header>
 
-      {/* Sidebar for Desktop & Collapsible for Mobile */}
+      {/* Mobile Drawer Overlay */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-ink/50 z-30 md:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Dark Forest-Slate Sidebar: Off-canvas drawer on <768px, collapsible rail on >=768px */}
       <aside
-        className={`${
-          mobileMenuOpen ? 'block' : 'hidden'
-        } md:flex w-full md:w-64 bg-surface border-r border-border flex-shrink-0 flex-col justify-between z-30`}
+        className={`fixed inset-y-0 left-0 z-40 w-[260px] transform transition-all duration-200 ease-in-out bg-ink text-canvas border-r border-canvas/15 flex flex-col justify-between flex-shrink-0 md:static md:translate-x-0 ${
+          mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        } ${collapsed ? 'md:w-[64px]' : 'md:w-[260px]'}`}
       >
         <div>
-          {/* Logo / Brand header */}
-          <div className="p-5 flex items-center justify-between border-b border-border">
-            <div className="flex items-center gap-3">
-              <div className="w-7 h-7 rounded-sm bg-ink text-canvas flex items-center justify-center font-serif text-sm">
+          {/* Logo / Brand header + Collapse Toggle */}
+          <div className={`p-4 flex items-center border-b border-canvas/15 ${collapsed ? 'md:justify-center md:px-2' : 'justify-between'}`}>
+            <div className={`flex items-center gap-3 min-w-0 ${collapsed ? 'md:hidden' : ''}`}>
+              <div className="w-7 h-7 rounded-sm bg-canvas/10 border border-gold/50 text-canvas flex items-center justify-center font-serif text-sm flex-shrink-0">
                 V
               </div>
-              <div>
-                <span className="font-serif text-xl tracking-tight text-ink font-semibold">VAULT</span>
-                <span className="block text-[10px] font-mono tracking-widest text-muted-ink uppercase">
+              <div className="truncate">
+                <span className="font-serif text-xl tracking-tight text-canvas font-semibold">VAULT</span>
+                <span className="block text-[10px] font-mono tracking-widest text-canvas/70 uppercase">
                   Financial Ledger
                 </span>
               </div>
             </div>
-            <button
-              onClick={() => setCommandBarOpen(true)}
-              className="hidden md:flex items-center gap-1 text-[10px] font-mono text-muted-ink bg-canvas px-1.5 py-1 rounded-sm border border-border hover:border-ink hover:text-ink transition-colors"
-              title="Command Bar (Cmd+K)"
-            >
-              <span>⌘K</span>
-            </button>
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={toggleCollapsed}
+                className="hidden md:flex items-center justify-center p-1.5 rounded-sm text-canvas/70 hover:text-canvas hover:bg-canvas/10 transition-colors"
+                title={collapsed ? 'Expand sidebar (⌘B)' : 'Collapse sidebar (⌘B)'}
+                aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              >
+                {collapsed ? <PanelLeftOpen className="w-4 h-4" /> : <PanelLeftClose className="w-4 h-4" />}
+              </button>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="md:hidden p-1.5 rounded-sm text-canvas/70 hover:text-canvas hover:bg-canvas/10"
+                aria-label="Close navigation menu"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           {/* Navigation Links */}
-          <nav className="p-3 space-y-0.5">
+          <nav className="p-2.5 space-y-0.5">
             {navigation.map((item) => {
               const isActive = location.pathname === item.href;
               const Icon = item.icon;
@@ -105,14 +156,19 @@ export const Layout: React.FC = () => {
                   key={item.name}
                   to={item.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`flex items-center gap-2.5 px-3 py-2 rounded-sm text-xs transition-colors ${
+                  title={collapsed ? item.name : undefined}
+                  className={`flex items-center gap-2.5 py-2 rounded-sm text-xs transition-colors border-l-2 ${
+                    collapsed ? 'md:justify-center md:px-0 px-3' : 'px-3'
+                  } ${
                     isActive
-                      ? 'bg-canvas text-ink font-medium border-l-2 border-ink'
-                      : 'text-muted-ink hover:text-ink hover:bg-canvas/60'
+                      ? 'bg-canvas/10 text-canvas font-medium border-gold'
+                      : 'text-canvas/70 hover:text-canvas hover:bg-canvas/5 border-transparent'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-ink' : 'text-muted-ink'}`} />
-                  <span className="tracking-tight">{item.name}</span>
+                  <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-gold' : 'text-canvas/70'}`} />
+                  <span className={`tracking-tight truncate ${collapsed ? 'md:hidden' : ''}`}>
+                    {item.name}
+                  </span>
                 </Link>
               );
             })}
@@ -120,17 +176,20 @@ export const Layout: React.FC = () => {
         </div>
 
         {/* User Profile & Sign Out Footer */}
-        <div className="p-3 border-t border-border bg-canvas/40">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="w-6 h-6 rounded-sm bg-surface border border-border text-ink flex items-center justify-center font-mono text-xs">
+        <div className="p-3 border-t border-canvas/15 bg-canvas/5">
+          <div className={`flex items-center ${collapsed ? 'md:flex-col md:gap-2 justify-between' : 'justify-between'}`}>
+            <div className={`flex items-center gap-2 min-w-0 ${collapsed ? 'md:justify-center' : ''}`}>
+              <div
+                className="w-7 h-7 rounded-sm bg-canvas/10 border border-canvas/20 text-canvas flex items-center justify-center font-mono text-xs flex-shrink-0"
+                title={collapsed ? `${user?.name || 'Tejas23'} (${user?.email || 'tejas23@vault.local'})` : undefined}
+              >
                 <User className="w-3.5 h-3.5" />
               </div>
-              <div className="truncate">
-                <p className="text-xs font-mono font-medium text-ink truncate">
+              <div className={`truncate ${collapsed ? 'md:hidden' : ''}`}>
+                <p className="text-xs font-mono font-medium text-canvas truncate">
                   {user?.name || 'Tejas23'}
                 </p>
-                <p className="text-[10px] font-mono text-muted-ink truncate">
+                <p className="text-[10px] font-mono text-canvas/70 truncate">
                   {user?.email || 'tejas23@vault.local'}
                 </p>
               </div>
@@ -139,7 +198,7 @@ export const Layout: React.FC = () => {
               onClick={handleLogout}
               title="Sign Out"
               aria-label="Sign out"
-              className="p-1.5 text-muted-ink hover:text-liability hover:bg-surface border border-transparent hover:border-border rounded-sm transition-colors"
+              className="p-1.5 text-canvas/70 hover:text-canvas hover:bg-canvas/10 border border-transparent hover:border-canvas/20 rounded-sm transition-colors flex-shrink-0"
             >
               <LogOut className="w-3.5 h-3.5" />
             </button>

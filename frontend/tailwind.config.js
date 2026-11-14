@@ -7,14 +7,14 @@ export default {
   theme: {
     extend: {
       colors: {
-        canvas: "var(--color-canvas)",
-        surface: "var(--color-surface)",
-        border: "var(--color-border)",
-        ink: "var(--color-ink)",
-        "muted-ink": "var(--color-muted-ink)",
-        growth: "var(--color-growth)",
-        liability: "var(--color-liability)",
-        gold: "var(--color-gold)",
+        canvas: "rgb(var(--color-canvas-rgb) / <alpha-value>)",
+        surface: "rgb(var(--color-surface-rgb) / <alpha-value>)",
+        border: "rgb(var(--color-border-rgb) / <alpha-value>)",
+        ink: "rgb(var(--color-ink-rgb) / <alpha-value>)",
+        "muted-ink": "rgb(var(--color-muted-ink-rgb) / <alpha-value>)",
+        growth: "rgb(var(--color-growth-rgb) / <alpha-value>)",
+        liability: "rgb(var(--color-liability-rgb) / <alpha-value>)",
+        gold: "rgb(var(--color-gold-rgb) / <alpha-value>)",
       },
       fontFamily: {
         serif: ["var(--font-serif)"],

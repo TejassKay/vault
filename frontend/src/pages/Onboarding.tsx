@@ -40,12 +40,12 @@ export const Onboarding: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 py-4">
-      <div className="bg-gradient-to-r from-slate-900 to-indigo-950 text-white rounded-2xl p-8 shadow-sm">
-        <span className="text-xs font-semibold tracking-wider uppercase text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-3 py-1 rounded-full">
+      <div className="bg-ink text-canvas border border-gold/60 rounded-sm p-8">
+        <span className="text-[11px] font-mono tracking-widest uppercase text-canvas bg-growth/30 border border-growth/60 px-3 py-1 rounded-sm">
           Guided Onboarding
         </span>
-        <h1 className="text-2xl md:text-3xl font-extrabold mt-3">Welcome to Vault</h1>
-        <p className="text-slate-300 mt-2 max-w-2xl text-sm md:text-base">
+        <h1 className="text-2xl md:text-3xl font-serif mt-4 pb-3 border-b border-gold/50">Welcome to Vault</h1>
+        <p className="text-canvas/80 mt-3 max-w-2xl text-sm md:text-base font-sans">
           Vault connects what you own, what you owe, and what you save into one unified platform.
           Follow these 4 quick steps to set up your profile in under 5 minutes.
         </p>
@@ -57,25 +57,25 @@ export const Onboarding: React.FC = () => {
           return (
             <div
               key={s.num}
-              className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm hover:border-indigo-300 transition-all flex flex-col justify-between"
+              className="bg-surface border border-border rounded-sm p-6 hover:border-growth/60 transition-colors flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-center justify-between mb-4">
-                  <span className="w-8 h-8 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 font-bold flex items-center justify-center text-sm">
+                  <span className="w-8 h-8 rounded-full bg-growth/[0.08] border border-growth/35 text-growth font-mono font-semibold flex items-center justify-center text-sm">
                     {s.num}
                   </span>
-                  <div className="p-2 rounded-lg bg-slate-50 text-slate-700">
-                    <Icon className="w-5 h-5 text-indigo-600" />
+                  <div className="p-2 rounded-sm bg-canvas border border-border text-growth">
+                    <Icon className="w-5 h-5 text-growth" />
                   </div>
                 </div>
-                <h3 className="text-lg font-bold text-slate-900">{s.title}</h3>
-                <p className="text-sm text-slate-600 mt-2 leading-relaxed">{s.desc}</p>
+                <h3 className="text-lg font-serif text-ink">{s.title}</h3>
+                <p className="text-sm text-muted-ink mt-2 leading-relaxed font-sans">{s.desc}</p>
               </div>
 
-              <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+              <div className="mt-6 pt-4 border-t border-border flex items-center justify-between">
                 <Link
                   to={s.href}
-                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-800 group"
+                  className="inline-flex items-center gap-1.5 text-sm font-mono font-medium text-growth hover:text-ink group"
                 >
                   {s.actionText}
                   <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
@@ -86,10 +86,10 @@ export const Onboarding: React.FC = () => {
         })}
       </div>
 
-      <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 flex items-start gap-3">
-        <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-        <div className="text-xs text-slate-600 leading-relaxed">
-          <span className="font-semibold text-slate-800">Privacy & Decision Support Policy: </span>
+      <div className="bg-surface border border-border rounded-sm p-5 flex items-start gap-3">
+        <CheckCircle2 className="w-5 h-5 text-growth flex-shrink-0 mt-0.5" />
+        <div className="text-xs text-muted-ink leading-relaxed font-sans">
+          <span className="font-semibold text-ink">Privacy & Decision Support Policy: </span>
           All data is strictly private and isolated to your account. Vault provides educational decision support
           based strictly on the data you enter, at category level only. No trades, no named securities, and no external bank logins.
         </div>
