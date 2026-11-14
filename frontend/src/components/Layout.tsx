@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   Shield,
@@ -11,8 +11,12 @@ import {
   Compass,
   LogOut,
   User,
+  Menu,
+  X,
+  Search,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import CommandBar from './CommandBar';
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -28,6 +32,8 @@ export const Layout: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [commandBarOpen, setCommandBarOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -35,19 +41,62 @@ export const Layout: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-slate-50">
-      {/* Sidebar for desktop */}
-      <aside className="w-full md:w-64 bg-slate-900 text-slate-100 flex-shrink-0 flex flex-col justify-between">
+    <div className="min-h-screen flex flex-col md:flex-row bg-canvas text-ink font-sans selection:bg-gold/20 selection:text-ink">
+      {/* Mobile Top Header */}
+      <header className="md:hidden flex items-center justify-between p-4 bg-surface border-b border-border">
+        <div className="flex items-center gap-2.5">
+          <Shield className="w-5 h-5 text-growth" />
+          <span className="font-serif text-lg tracking-wide font-medium text-ink">VAULT Ledger</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setCommandBarOpen(true)}
+            className="p-1.5 border border-border rounded-sm text-ink hover:bg-canvas"
+            aria-label="Open command bar"
+          >
+            <Search className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="p-1.5 border border-border rounded-sm text-ink hover:bg-canvas"
+            aria-label="Toggle navigation menu"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
+      </header>
+
+      {/* Sidebar for Desktop & Collapsible for Mobile */}
+      <aside
+        className={`${
+          mobileMenuOpen ? 'block' : 'hidden'
+        } md:flex w-full md:w-64 bg-surface border-r border-border flex-shrink-0 flex-col justify-between z-30`}
+      >
         <div>
-          <div className="p-4 flex items-center gap-3 border-b border-slate-800">
-            <Shield className="w-8 h-8 text-emerald-400" />
-            <div>
-              <span className="font-bold text-lg tracking-wide text-white">VAULT</span>
-              <span className="block text-xs text-slate-400">Asset & Finance Core</span>
+          {/* Logo / Brand header */}
+          <div className="p-5 flex items-center justify-between border-b border-border">
+            <div className="flex items-center gap-3">
+              <div className="w-7 h-7 rounded-sm bg-ink text-canvas flex items-center justify-center font-serif text-sm">
+                V
+              </div>
+              <div>
+                <span className="font-serif text-xl tracking-tight text-ink font-semibold">VAULT</span>
+                <span className="block text-[10px] font-mono tracking-widest text-muted-ink uppercase">
+                  Financial Ledger
+                </span>
+              </div>
             </div>
+            <button
+              onClick={() => setCommandBarOpen(true)}
+              className="hidden md:flex items-center gap-1 text-[10px] font-mono text-muted-ink bg-canvas px-1.5 py-1 rounded-sm border border-border hover:border-ink hover:text-ink transition-colors"
+              title="Command Bar (Cmd+K)"
+            >
+              <span>⌘K</span>
+            </button>
           </div>
 
-          <nav className="p-4 space-y-1">
+          {/* Navigation Links */}
+          <nav className="p-3 space-y-0.5">
             {navigation.map((item) => {
               const isActive = location.pathname === item.href;
               const Icon = item.icon;
@@ -55,32 +104,33 @@ export const Layout: React.FC = () => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-2.5 px-3 py-2 rounded-sm text-xs transition-colors ${
                     isActive
-                      ? 'bg-emerald-500/20 text-emerald-300 font-semibold'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      ? 'bg-canvas text-ink font-medium border-l-2 border-ink'
+                      : 'text-muted-ink hover:text-ink hover:bg-canvas/60'
                   }`}
                 >
-                  <Icon className={`w-5 h-5 ${isActive ? 'text-emerald-400' : 'text-slate-400'}`} />
-                  {item.name}
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-ink' : 'text-muted-ink'}`} />
+                  <span className="tracking-tight">{item.name}</span>
                 </Link>
               );
             })}
           </nav>
         </div>
 
-        {/* User Profile & Logout */}
-        <div className="p-4 border-t border-slate-800">
+        {/* User Profile & Sign Out Footer */}
+        <div className="p-3 border-t border-border bg-canvas/40">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">
-                <User className="w-4 h-4" />
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-6 h-6 rounded-sm bg-surface border border-border text-ink flex items-center justify-center font-mono text-xs">
+                <User className="w-3.5 h-3.5" />
               </div>
               <div className="truncate">
-                <p className="text-xs font-semibold text-white truncate">
+                <p className="text-xs font-mono font-medium text-ink truncate">
                   {user?.name || 'Tejas23'}
                 </p>
-                <p className="text-[10px] text-slate-400 truncate">
+                <p className="text-[10px] font-mono text-muted-ink truncate">
                   {user?.email || 'tejas23@vault.local'}
                 </p>
               </div>
@@ -88,34 +138,56 @@ export const Layout: React.FC = () => {
             <button
               onClick={handleLogout}
               title="Sign Out"
-              className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-colors"
+              aria-label="Sign out"
+              className="p-1.5 text-muted-ink hover:text-liability hover:bg-surface border border-transparent hover:border-border rounded-sm transition-colors"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0">
-        <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-slate-800">Connected Platform</h1>
+      <main className="flex-1 flex flex-col min-w-0 bg-canvas">
+        {/* Archival Top Ledger Header Bar */}
+        <header className="hidden md:flex bg-surface border-b border-border px-8 py-3.5 items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="text-xs text-slate-600 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-full font-medium flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Signed in as <strong>{user?.name || 'Tejas23'}</strong></span>
+            <span className="text-xs font-mono uppercase tracking-widest text-muted-ink">
+              Archival Ledger & Decision Record
+            </span>
+            <span className="text-border">|</span>
+            <button
+              onClick={() => setCommandBarOpen(true)}
+              className="flex items-center gap-2 text-xs font-mono text-muted-ink bg-canvas px-2.5 py-1 rounded-sm border border-border hover:border-ink hover:text-ink transition-colors"
+            >
+              <Search className="w-3.5 h-3.5" />
+              <span>Jump to record...</span>
+              <kbd className="px-1 text-[10px] bg-surface border border-border rounded-xs">⌘K</kbd>
+            </button>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="text-xs font-mono text-growth bg-growth/5 border border-growth/30 px-2.5 py-1 rounded-sm flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-growth" />
+              <span>Ledger: <strong>{user?.name || 'Tejas23'}</strong></span>
             </div>
-            <div className="text-xs text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full font-medium">
-              ₹ INR
+            <div className="text-xs font-mono text-muted-ink bg-canvas px-2.5 py-1 rounded-sm border border-border">
+              Standard: INR (₹)
             </div>
           </div>
         </header>
 
-        <div className="p-6 flex-1">
+        <div className="p-6 md:p-8 flex-1">
           <Outlet />
         </div>
       </main>
+
+      {/* Command Bar Modal */}
+      <CommandBar
+        isOpen={commandBarOpen}
+        onClose={() => setCommandBarOpen(false)}
+      />
     </div>
   );
 };
 
+export default Layout;
