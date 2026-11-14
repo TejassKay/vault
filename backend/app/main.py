@@ -1,7 +1,17 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routers import advisor, appliances, auth, bills, finance, goals, health, reminders
+from app.api.routers import (
+    advisor,
+    appliances,
+    auth,
+    bills,
+    dashboard,
+    finance,
+    goals,
+    health,
+    reminders,
+)
 from app.config import settings
 
 app = FastAPI(
@@ -38,6 +48,8 @@ app.include_router(reminders.router)
 app.include_router(reminders.router, prefix=settings.API_V1_STR)
 app.include_router(advisor.router)
 app.include_router(advisor.router, prefix=settings.API_V1_STR)
+app.include_router(dashboard.router)
+app.include_router(dashboard.router, prefix=settings.API_V1_STR)
 
 
 @app.get("/")

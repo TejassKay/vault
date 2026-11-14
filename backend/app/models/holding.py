@@ -29,7 +29,7 @@ class Holding(Base):
     current_value: Mapped[Decimal] = mapped_column(Numeric(12, 2), nullable=False)
     as_of_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
     liquidity: Mapped[str] = mapped_column(
-        String(10), nullable=False
+        String(15), nullable=False
     )  # liquid, semi_liquid, locked
     is_emergency_reserve: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     source: Mapped[str] = mapped_column(String(10), nullable=False, default="manual")

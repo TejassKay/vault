@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -73,3 +74,195 @@ def login(data: UserLogin, db: Session = Depends(get_db)) -> TokenResponse:
 def get_me(current_user: User = Depends(get_current_user)) -> UserResponse:
     """NFR-3: Get current authenticated user profile."""
     return current_user
+
+
+@router.get("/me/export")
+def export_user_data(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> dict[str, Any]:
+    """FR-30: Export all user-owned records as structured JSON."""
+    from app.models.appliance import Appliance, Service
+    from app.models.bill import Bill
+    from app.models.goal import Goal
+    from app.models.holding import Holding
+    from app.models.income_source import IncomeSource
+    from app.models.liability import Liability
+    from app.models.recommendation import Recommendation
+    from app.models.reminder import Reminder
+    from app.models.risk_profile import RiskProfile
+    from app.models.transaction import Transaction
+
+    uid = current_user.user_id
+
+    bills = db.query(Bill).filter(Bill.user_id == uid).all()
+    appliances = db.query(Appliance).filter(Appliance.user_id == uid).all()
+    app_ids = [a.appliance_id for a in appliances]
+    services = db.query(Service).filter(Service.appliance_id.in_(app_ids)).all() if app_ids else []
+    transactions = db.query(Transaction).filter(Transaction.user_id == uid).all()
+    income_sources = db.query(IncomeSource).filter(IncomeSource.user_id == uid).all()
+    liabilities = db.query(Liability).filter(Liability.user_id == uid).all()
+    holdings = db.query(Holding).filter(Holding.user_id == uid).all()
+    goals = db.query(Goal).filter(Goal.user_id == uid).all()
+    risk_profiles = db.query(RiskProfile).filter(RiskProfile.user_id == uid).all()
+    recommendations = db.query(Recommendation).filter(Recommendation.user_id == uid).all()
+    reminders = db.query(Reminder).filter(Reminder.user_id == uid).all()
+
+    return {
+        "user": {
+            "user_id": current_user.user_id,
+            "name": current_user.name,
+            "email": current_user.email,
+            "consent_given_at": current_user.consent_given_at.isoformat() if current_user.consent_given_at else None,
+            "created_at": current_user.created_at.isoformat() if current_user.created_at else None,
+        },
+        "bills": [
+            {
+                "bill_id": b.bill_id,
+                "file_url": b.file_url,
+                "file_type": b.file_type,
+                "parse_status": b.parse_status,
+                "raw_text": b.raw_text,
+                "extraction_json": b.extraction_json,
+                "corrected_fields": b.corrected_fields,
+                "uploaded_at": b.uploaded_at.isoformat() if b.uploaded_at else None,
+            }
+            for b in bills
+        ],
+        "appliances": [
+            {
+                "appliance_id": a.appliance_id,
+                "category_id": a.category_id,
+                "product_name": a.product_name,
+                "brand": a.brand,
+                "model_number": a.model_number,
+                "seller": a.seller,
+                "price": str(a.price) if a.price else None,
+                "purchase_date": a.purchase_date.isoformat() if a.purchase_date else None,
+                "warranty_months": a.warranty_months,
+                "warranty_end_date": a.warranty_end_date.isoformat() if a.warranty_end_date else None,
+                "estimated_value": str(a.estimated_value) if a.estimated_value else None,
+            }
+            for a in appliances
+        ],
+        "services": [
+            {
+                "service_id": s.service_id,
+                "appliance_id": s.appliance_id,
+                "due_date": s.due_date.isoformat() if s.due_date else None,
+                "status": s.status,
+                "cost": str(s.cost) if s.cost else None,
+                "guidance_label": s.guidance_label,
+                "note": s.note,
+            }
+            for s in services
+        ],
+        "transactions": [
+            {
+                "transaction_id": t.transaction_id,
+                "type": t.type,
+                "amount": str(t.amount),
+                "category": t.category,
+                "txn_date": t.txn_date.isoformat(),
+                "note": t.note,
+                "is_recurring": t.is_recurring,
+            }
+            for t in transactions
+        ],
+        "income_sources": [
+            {
+                "income_source_id": i.income_source_id,
+                "name": i.name,
+                "amount": str(i.amount),
+                "frequency": i.frequency,
+                "income_type": i.income_type,
+                "expected_day": i.expected_day,
+                "is_active": i.is_active,
+            }
+            for i in income_sources
+        ],
+        "liabilities": [
+            {
+                "liability_id": liab.liability_id,
+                "type": liab.type,
+                "lender_name": liab.lender_name,
+                "outstanding_principal": str(liab.outstanding_principal),
+                "interest_rate": str(liab.interest_rate),
+                "emi_amount": str(liab.emi_amount),
+                "due_day": liab.due_day,
+                "remaining_months": liab.remaining_months,
+                "status": liab.status,
+            }
+            for liab in liabilities
+        ],
+        "holdings": [
+            {
+                "holding_id": h.holding_id,
+                "type": h.type,
+                "name": h.name,
+                "current_value": str(h.current_value),
+                "as_of_date": h.as_of_date.isoformat(),
+                "liquidity": h.liquidity,
+                "is_emergency_reserve": h.is_emergency_reserve,
+                "source": h.source,
+            }
+            for h in holdings
+        ],
+        "goals": [
+            {
+                "goal_id": g.goal_id,
+                "title": g.title,
+                "target_amount": str(g.target_amount),
+                "saved_amount": str(g.saved_amount),
+                "target_date": g.target_date.isoformat(),
+                "priority": g.priority,
+                "liquidity_need": g.liquidity_need,
+                "status": g.status,
+            }
+            for g in goals
+        ],
+        "risk_profiles": [
+            {
+                "risk_profile_id": rp.risk_profile_id,
+                "answers": rp.answers,
+                "score": rp.score,
+                "tolerance_level": rp.tolerance_level,
+                "capacity_level": rp.capacity_level,
+                "effective_level": rp.effective_level,
+                "assessed_at": rp.assessed_at.isoformat(),
+            }
+            for rp in risk_profiles
+        ],
+        "recommendations": [
+            {
+                "recommendation_id": r.recommendation_id,
+                "priority_rank": r.priority_rank,
+                "rec_type": r.rec_type,
+                "action": r.action,
+                "reason": r.reason,
+                "status": r.status,
+                "created_at": r.created_at.isoformat(),
+            }
+            for r in recommendations
+        ],
+        "reminders": [
+            {
+                "reminder_id": rem.reminder_id,
+                "type": rem.type,
+                "remind_on": rem.remind_on.isoformat(),
+                "message": rem.message,
+                "sent": rem.sent,
+            }
+            for rem in reminders
+        ],
+    }
+
+
+@router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)
+def delete_user_account(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> None:
+    """FR-30: Permanently delete current user account and all cascaded data."""
+    db.delete(current_user)
+    db.commit()
