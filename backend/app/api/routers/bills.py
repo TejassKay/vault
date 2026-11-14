@@ -85,6 +85,16 @@ async def upload_bill(
     parser = BillParser()
     result = parser.extract(str(file_path), file_type)
 
+    # Dev debug log: print raw_text and extraction JSON per upload
+    import json
+
+    print(
+        f"\n--- [DEV DEBUG: BILL UPLOAD] ---\n"
+        f"RAW TEXT:\n{result.get('raw_text')}\n\n"
+        f"EXTRACTION JSON:\n{json.dumps(result.get('extraction_json'), indent=2)}\n"
+        f"--------------------------------\n"
+    )
+
     # Update bill with parsed data
     bill = bill_repository.update_bill(
         db,

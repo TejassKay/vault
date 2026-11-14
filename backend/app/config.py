@@ -30,7 +30,9 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24 hours
 
     # Integrations
-    VAULT_LLM_PROVIDER: str = "mock"  # "mock" | "openai" | "claude"
+    VAULT_LLM_PROVIDER: str = "mock"  # "mock" | "gemini" | "openai" | "claude"
+    GEMINI_API_KEY: str | None = None
+    GEMINI_MODEL: str | None = None
 
     # CORS
     BACKEND_CORS_ORIGINS: list[str] = [
