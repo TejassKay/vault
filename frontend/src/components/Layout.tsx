@@ -109,20 +109,20 @@ export const Layout: React.FC = () => {
 
       {/* Dark Forest-Slate Sidebar: Off-canvas drawer on <768px, collapsible rail on >=768px */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-[260px] transform transition-all duration-200 ease-in-out bg-ink text-canvas border-r border-canvas/15 flex flex-col justify-between flex-shrink-0 md:static md:translate-x-0 ${
+        className={`vault-sidebar fixed inset-y-0 left-0 z-40 w-[260px] transform transition-all duration-200 ease-in-out flex flex-col justify-between flex-shrink-0 md:static md:translate-x-0 ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         } ${collapsed ? 'md:w-[64px]' : 'md:w-[260px]'}`}
       >
         <div>
           {/* Logo / Brand header + Collapse Toggle */}
-          <div className={`p-4 flex items-center border-b border-canvas/15 ${collapsed ? 'md:justify-center md:px-2' : 'justify-between'}`}>
+          <div className={`vault-sidebar-header p-4 flex items-center ${collapsed ? 'md:justify-center md:px-2' : 'justify-between'}`}>
             <div className={`flex items-center gap-3 min-w-0 ${collapsed ? 'md:hidden' : ''}`}>
               <div className="w-7 h-7 rounded-sm bg-canvas/10 border border-gold/50 text-canvas flex items-center justify-center font-serif text-sm flex-shrink-0">
                 V
               </div>
               <div className="truncate">
                 <span className="font-serif text-xl tracking-tight text-canvas font-semibold">VAULT</span>
-                <span className="block text-[10px] font-mono tracking-widest text-canvas/70 uppercase">
+                <span className="vault-sidebar-muted block text-[10px] font-mono tracking-widest uppercase">
                   Financial Ledger
                 </span>
               </div>
@@ -130,7 +130,7 @@ export const Layout: React.FC = () => {
             <div className="flex items-center gap-1.5">
               <button
                 onClick={toggleCollapsed}
-                className="hidden md:flex items-center justify-center p-1.5 rounded-sm text-canvas/70 hover:text-canvas hover:bg-canvas/10 transition-colors"
+                className="vault-sidebar-muted hidden md:flex items-center justify-center p-1.5 rounded-sm hover:text-canvas hover:bg-canvas/10 transition-colors"
                 title={collapsed ? 'Expand sidebar (⌘B)' : 'Collapse sidebar (⌘B)'}
                 aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
               >
@@ -138,7 +138,7 @@ export const Layout: React.FC = () => {
               </button>
               <button
                 onClick={() => setMobileMenuOpen(false)}
-                className="md:hidden p-1.5 rounded-sm text-canvas/70 hover:text-canvas hover:bg-canvas/10"
+                className="vault-sidebar-muted md:hidden p-1.5 rounded-sm hover:text-canvas hover:bg-canvas/10"
                 aria-label="Close navigation menu"
               >
                 <X className="w-4 h-4" />
@@ -157,15 +157,15 @@ export const Layout: React.FC = () => {
                   to={item.href}
                   onClick={() => setMobileMenuOpen(false)}
                   title={collapsed ? item.name : undefined}
-                  className={`flex items-center gap-2.5 py-2 rounded-sm text-xs transition-colors border-l-2 ${
+                  className={`flex items-center gap-2.5 py-2 rounded-sm text-xs transition-colors ${
                     collapsed ? 'md:justify-center md:px-0 px-3' : 'px-3'
                   } ${
                     isActive
-                      ? 'bg-canvas/10 text-canvas font-medium border-gold'
-                      : 'text-canvas/70 hover:text-canvas hover:bg-canvas/5 border-transparent'
+                      ? 'vault-nav-item--active'
+                      : 'vault-nav-item'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-gold' : 'text-canvas/70'}`} />
+                  <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? 'vault-nav-icon--active' : ''}`} />
                   <span className={`tracking-tight truncate ${collapsed ? 'md:hidden' : ''}`}>
                     {item.name}
                   </span>
@@ -176,7 +176,7 @@ export const Layout: React.FC = () => {
         </div>
 
         {/* User Profile & Sign Out Footer */}
-        <div className="p-3 border-t border-canvas/15 bg-canvas/5">
+        <div className="vault-sidebar-footer p-3">
           <div className={`flex items-center ${collapsed ? 'md:flex-col md:gap-2 justify-between' : 'justify-between'}`}>
             <div className={`flex items-center gap-2 min-w-0 ${collapsed ? 'md:justify-center' : ''}`}>
               <div
@@ -189,7 +189,7 @@ export const Layout: React.FC = () => {
                 <p className="text-xs font-mono font-medium text-canvas truncate">
                   {user?.name || 'Tejas23'}
                 </p>
-                <p className="text-[10px] font-mono text-canvas/70 truncate">
+                <p className="vault-sidebar-muted text-[10px] font-mono truncate">
                   {user?.email || 'tejas23@vault.local'}
                 </p>
               </div>
@@ -198,7 +198,7 @@ export const Layout: React.FC = () => {
               onClick={handleLogout}
               title="Sign Out"
               aria-label="Sign out"
-              className="p-1.5 text-canvas/70 hover:text-canvas hover:bg-canvas/10 border border-transparent hover:border-canvas/20 rounded-sm transition-colors flex-shrink-0"
+              className="vault-sidebar-muted p-1.5 hover:text-canvas hover:bg-canvas/10 border border-transparent hover:border-canvas/20 rounded-sm transition-colors flex-shrink-0"
             >
               <LogOut className="w-3.5 h-3.5" />
             </button>

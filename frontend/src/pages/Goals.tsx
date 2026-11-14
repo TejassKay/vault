@@ -217,9 +217,9 @@ export const Goals: React.FC = () => {
                         <span className="text-muted-ink">Progress</span>
                         <span className="font-semibold text-ink">{progressPct}%</span>
                       </div>
-                      <div className="w-full bg-canvas border border-border rounded-sm h-2 overflow-hidden">
+                      <div className="vault-progress-track w-full rounded-sm h-2 overflow-hidden">
                         <div
-                          className="bg-growth h-full transition-all"
+                          className="vault-progress-fill h-full transition-all"
                           style={{
                             width: `${progressPct}%`,
                             minWidth: progressPct > 0 ? '6px' : undefined,

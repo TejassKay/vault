@@ -10,10 +10,21 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --canvas: #f8f7f4;
+  --surface: #ffffff;
+  --border: #e2e0d8;
+  --ink: #1f2a26;
+  --muted-ink: #5b6760;
+  --green: #1f5d3d;
+  --terracotta: #b4532a;
+  --gold: #b8934a;
+}
+
 @layer base {
   body {
-    background-color: var(--color-canvas);
-    color: var(--color-ink);
+    background-color: var(--canvas);
+    color: var(--ink);
     font-family: var(--font-sans);
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
@@ -29,7 +40,175 @@
   }
 
   *:focus-visible {
-    outline: 2px solid var(--color-ink);
+    outline: 2px solid var(--ink);
     outline-offset: 2px;
   }
+}
+
+/* Explicit theme classes reading plain :root CSS variables */
+.vault-sidebar {
+  background-color: var(--ink);
+  color: var(--canvas);
+  border-right: 1px solid rgba(248, 247, 244, 0.15);
+}
+
+.vault-sidebar-header {
+  border-bottom: 1px solid rgba(248, 247, 244, 0.15);
+}
+
+.vault-sidebar-footer {
+  border-top: 1px solid rgba(248, 247, 244, 0.15);
+  background-color: rgba(248, 247, 244, 0.05);
+}
+
+.vault-sidebar-muted {
+  color: rgba(248, 247, 244, 0.7);
+}
+
+.vault-nav-item {
+  color: rgba(248, 247, 244, 0.7);
+  border-left: 2px solid transparent;
+}
+
+.vault-nav-item:hover {
+  color: var(--canvas);
+  background-color: rgba(248, 247, 244, 0.06);
+}
+
+.vault-nav-item--active {
+  color: var(--canvas);
+  background-color: rgba(248, 247, 244, 0.12);
+  border-left: 2px solid var(--gold);
+  font-weight: 500;
+}
+
+.vault-nav-icon--active {
+  color: var(--gold);
+}
+
+.vault-pill {
+  border-width: 1px;
+  border-style: solid;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+}
+
+.vault-pill--growth {
+  color: var(--green);
+  background-color: color-mix(in srgb, var(--green) 8%, transparent);
+  border-color: color-mix(in srgb, var(--green) 35%, transparent);
+}
+
+.vault-pill--liability {
+  color: var(--terracotta);
+  background-color: color-mix(in srgb, var(--terracotta) 8%, transparent);
+  border-color: color-mix(in srgb, var(--terracotta) 35%, transparent);
+}
+
+.vault-pill--gold {
+  color: var(--ink);
+  background-color: color-mix(in srgb, var(--gold) 8%, transparent);
+  border-color: color-mix(in srgb, var(--gold) 50%, transparent);
+}
+
+.vault-pill--neutral {
+  color: var(--muted-ink);
+  background-color: var(--canvas);
+  border-color: var(--border);
+}
+
+.vault-amount--positive {
+  color: var(--green);
+}
+
+.vault-amount--negative {
+  color: var(--terracotta);
+}
+
+.vault-progress-track {
+  background-color: var(--canvas);
+  border: 1px solid var(--border);
+}
+
+.vault-progress-fill {
+  background-color: var(--green);
+}
+
+.vault-capacity-card {
+  background-color: var(--ink);
+  color: var(--canvas);
+  border: 1px solid var(--gold);
+}
+
+.vault-gold-rule {
+  border-color: var(--gold);
+}
+
+.vault-capacity-bar-surplus {
+  background-color: var(--green);
+}
+
+.vault-capacity-bar-goal {
+  background-color: color-mix(in srgb, var(--green) 75%, var(--canvas) 25%);
+}
+
+.vault-capacity-bar-obligation {
+  background-color: var(--terracotta);
+}
+
+/* Login archival ledger styles */
+.vault-login-ink {
+  background-color: var(--ink);
+  color: var(--canvas);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 27px,
+    rgba(248, 247, 244, 0.04) 27px,
+    rgba(248, 247, 244, 0.04) 28px
+  );
+}
+
+.vault-login-rule {
+  border-color: var(--gold);
+}
+
+.vault-login-row {
+  border-bottom: 1px solid color-mix(in srgb, var(--gold) 40%, transparent);
+}
+
+.vault-login-card {
+  background-color: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+
+.vault-login-input {
+  background-color: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+
+.vault-login-input:focus {
+  outline: 2px solid var(--green);
+  outline-offset: 0px;
+  border-color: var(--green);
+}
+
+.vault-login-btn {
+  background-color: var(--green);
+  color: var(--canvas);
+  border-radius: 3px;
+}
+
+.vault-login-btn:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--green) 85%, #000000 15%);
+}
+
+.vault-login-error {
+  color: var(--terracotta);
+  border: 1px solid var(--terracotta);
+  background-color: color-mix(in srgb, var(--terracotta) 6%, transparent);
+  border-radius: 3px;
 }
