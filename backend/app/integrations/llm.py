@@ -42,6 +42,10 @@ class LLMProvider(ABC):
     def extract_bill_fields(self, raw_text: str) -> ExtractionResult:
         """Return a dict mapping each EXTRACTION_FIELDS key to its value or None."""
 
+    def explain_recommendation(self, plan_item: dict[str, Any]) -> str | None:
+        """Explain a validated plan item in plain language using only provided numbers."""
+        return None
+
 
 # ---------------------------------------------------------------------------
 # Mock provider
@@ -142,6 +146,31 @@ class OpenAIProvider(LLMProvider):
         except Exception:  # noqa: BLE001
             return _regex_extract(raw_text)
 
+    def explain_recommendation(self, plan_item: dict[str, Any]) -> str | None:
+        try:
+            import openai  # type: ignore[import-untyped]
+
+            client = openai.OpenAI(api_key=self._api_key)
+            prompt = (
+                "You are an educational financial decision support assistant. "
+                "Explain the following recommendation plan item in plain, neutral language. "
+                "CRITICAL RULES: Use ONLY the numbers present in the JSON. Add NO numbers, NO products, "
+                "and NO promises or guarantees. Keep response under 150 words.\n\n"
+                f"Plan JSON:\n{json.dumps(plan_item)}"
+            )
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "You explain financial recommendations without adding numbers or guarantees."},
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=0,
+                max_tokens=256,
+            )
+            return response.choices[0].message.content
+        except Exception:  # noqa: BLE001
+            return None
+
 
 class ClaudeProvider(LLMProvider):
     """Real Anthropic Claude extraction (requires VAULT_ANTHROPIC_API_KEY)."""
@@ -174,6 +203,28 @@ class ClaudeProvider(LLMProvider):
             return {f: data.get(f) for f in EXTRACTION_FIELDS}
         except Exception:  # noqa: BLE001
             return _regex_extract(raw_text)
+
+    def explain_recommendation(self, plan_item: dict[str, Any]) -> str | None:
+        try:
+            import anthropic  # type: ignore[import-untyped]
+
+            client = anthropic.Anthropic(api_key=self._api_key)
+            prompt = (
+                "You are an educational financial decision support assistant. "
+                "Explain the following recommendation plan item in plain, neutral language. "
+                "CRITICAL RULES: Use ONLY the numbers present in the JSON. Add NO numbers, NO products, "
+                "and NO promises or guarantees. Keep response under 150 words.\n\n"
+                f"Plan JSON:\n{json.dumps(plan_item)}"
+            )
+            message = client.messages.create(
+                model="claude-3-haiku-20240307",
+                max_tokens=256,
+                system="You explain financial recommendations without adding numbers or guarantees.",
+                messages=[{"role": "user", "content": prompt}],
+            )
+            return message.content[0].text if message.content else None
+        except Exception:  # noqa: BLE001
+            return None
 
 
 # ---------------------------------------------------------------------------
