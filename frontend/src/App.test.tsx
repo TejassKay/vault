@@ -12,9 +12,8 @@ describe('App Component (NFR-5, NFR-6)', () => {
     expect(screen.getByText('System Health')).toBeInTheDocument();
   });
 
-  it('renders default dashboard placeholder content', () => {
+  it('renders default dashboard overview content', async () => {
     render(<App />);
-    expect(screen.getByText('Phase 0 Scaffold Active')).toBeInTheDocument();
-    expect(screen.getByText('Emergency Coverage')).toBeInTheDocument();
+    expect(screen.getByText(/Connected Overview|Loading unified dashboard/i)).toBeInTheDocument();
   });
 });
