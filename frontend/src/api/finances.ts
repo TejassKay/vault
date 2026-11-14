@@ -121,6 +121,12 @@ export async function createIncomeSource(data: Omit<IncomeSource, 'income_source
   });
 }
 
+export async function deleteIncomeSource(sourceId: number): Promise<void> {
+  return apiRequest(`/income-sources/${sourceId}`, {
+    method: 'DELETE',
+  });
+}
+
 export async function fetchLiabilities(): Promise<Liability[]> {
   return apiRequest<Liability[]>('/liabilities');
 }

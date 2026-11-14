@@ -12,10 +12,8 @@ describe('App Component (NFR-5, NFR-6)', () => {
 
   it('renders login screen when unauthenticated', () => {
     render(<App />);
-    expect(screen.getByText('Sign in to VAULT')).toBeInTheDocument();
-    expect(screen.getByText('Sign in with Google')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('Tejas23')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('Tejas@23')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Sign in' })).toBeInTheDocument();
+    expect(screen.getByText('ARCHIVAL PERSONAL LEDGER')).toBeInTheDocument();
   });
 
   it('renders navigation bar and dashboard when authenticated', async () => {

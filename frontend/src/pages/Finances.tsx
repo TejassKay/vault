@@ -38,6 +38,7 @@ export const Finances: React.FC = () => {
   const [incName, setIncName] = useState('');
   const [incAmount, setIncAmount] = useState('');
   const [incFrequency, setIncFrequency] = useState('monthly');
+  const [incType, setIncType] = useState('fixed');
 
   // New Liability Form state
   const [liabType] = useState('personal');
@@ -105,12 +106,13 @@ export const Finances: React.FC = () => {
   const handleAddIncome = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!incName || !incAmount) return;
+    setError(null);
     try {
       await createIncomeSource({
         name: incName,
         amount: parseFloat(incAmount),
         frequency: incFrequency,
-        income_type: 'salary',
+        income_type: incType,
         is_active: true,
       });
       setIncName('');
@@ -309,6 +311,14 @@ export const Finances: React.FC = () => {
               <option value="monthly">Monthly</option>
               <option value="weekly">Weekly</option>
               <option value="yearly">Yearly</option>
+            </select>
+            <select
+              value={incType}
+              onChange={(e) => setIncType(e.target.value)}
+              className="text-xs font-sans p-2 border border-border rounded-sm bg-surface focus:border-ink"
+            >
+              <option value="fixed">Fixed</option>
+              <option value="variable">Variable</option>
             </select>
             <button
               type="submit"

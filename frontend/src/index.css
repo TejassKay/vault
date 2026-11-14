@@ -11,6 +11,24 @@
 @tailwind utilities;
 
 :root {
+  --color-canvas: #f8f7f4;
+  --color-surface: #ffffff;
+  --color-border: #e2e0d8;
+  --color-ink: #1f2a26;
+  --color-muted-ink: #5b6760;
+  --color-growth: #1f5d3d;
+  --color-liability: #b4532a;
+  --color-gold: #b8934a;
+
+  --color-canvas-rgb: 248 247 244;
+  --color-surface-rgb: 255 255 255;
+  --color-border-rgb: 226 224 216;
+  --color-ink-rgb: 31 42 38;
+  --color-muted-ink-rgb: 91 103 96;
+  --color-growth-rgb: 31 93 61;
+  --color-liability-rgb: 180 83 42;
+  --color-gold-rgb: 184 147 74;
+
   --canvas: #f8f7f4;
   --surface: #ffffff;
   --border: #e2e0d8;
@@ -211,4 +229,78 @@
   border: 1px solid var(--terracotta);
   background-color: color-mix(in srgb, var(--terracotta) 6%, transparent);
   border-radius: 3px;
+}
+
+/* Command Bar ("Jump to record...") matching dark navbar/sidebar */
+.vault-command-backdrop {
+  background-color: rgba(31, 42, 38, 0.45);
+}
+
+.vault-command-panel {
+  background-color: var(--ink);
+  color: var(--canvas);
+  border: 1px solid rgba(248, 247, 244, 0.2);
+}
+
+.vault-command-header {
+  background-color: var(--ink);
+  border-bottom: 1px solid rgba(248, 247, 244, 0.15);
+}
+
+.vault-command-input {
+  color: var(--canvas);
+}
+
+.vault-command-input::placeholder {
+  color: rgba(248, 247, 244, 0.55);
+}
+
+.vault-command-kbd {
+  background-color: rgba(248, 247, 244, 0.1);
+  border: 1px solid rgba(248, 247, 244, 0.2);
+  color: rgba(248, 247, 244, 0.75);
+}
+
+.vault-command-list {
+  background-color: var(--ink);
+}
+
+.vault-command-list > * + * {
+  border-top: 1px solid rgba(248, 247, 244, 0.08);
+}
+
+.vault-command-item {
+  color: rgba(248, 247, 244, 0.78);
+  border: 1px solid transparent;
+}
+
+.vault-command-item:hover {
+  background-color: rgba(248, 247, 244, 0.08);
+}
+
+.vault-command-item--active {
+  background-color: rgba(248, 247, 244, 0.14);
+  color: var(--canvas);
+  border: 1px solid rgba(184, 147, 74, 0.65);
+}
+
+.vault-command-icon--active,
+.vault-command-arrow--active {
+  color: var(--gold);
+}
+
+.vault-command-muted {
+  color: rgba(248, 247, 244, 0.62);
+}
+
+.vault-command-badge {
+  color: rgba(248, 247, 244, 0.75);
+  border: 1px solid rgba(248, 247, 244, 0.2);
+  background-color: rgba(248, 247, 244, 0.06);
+}
+
+.vault-command-footer {
+  border-top: 1px solid rgba(248, 247, 244, 0.15);
+  background-color: rgba(248, 247, 244, 0.05);
+  color: rgba(248, 247, 244, 0.65);
 }
