@@ -94,7 +94,10 @@ async def upload_bill(
         parse_status=result["parse_status"],
     )
 
-    return BillResponse.model_validate(bill)
+    resp = BillResponse.model_validate(bill)
+    if result.get("error"):
+        resp.error = result["error"]
+    return resp
 
 
 @router.get("/{bill_id}", response_model=BillResponse)

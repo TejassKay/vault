@@ -24,6 +24,7 @@ Vault is structured as a **Layered Monolith**:
 * **Python:** 3.11 or 3.12 (`python3 --version`)
 * **Node.js:** v18+ or v20+ (`node -v`, `npm -v`)
 * **PostgreSQL:** Version 15+ or 16+ (or Docker)
+* **Tesseract OCR:** macOS: `brew install tesseract`
 
 ---
 

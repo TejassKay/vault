@@ -29,6 +29,7 @@ class BillResponse(BaseModel):
     extraction_json: dict[str, Any] | None = None
     corrected_fields: Any | None = None
     uploaded_at: datetime
+    error: str | None = None
 
 
 class BillCorrectRequest(BaseModel):
