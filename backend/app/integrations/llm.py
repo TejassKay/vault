@@ -53,22 +53,30 @@ class LLMProvider(ABC):
 
 _MOCK_PATTERNS: dict[str, re.Pattern[str]] = {
     "product_name": re.compile(
-        r"(?:product|item|description)[:\s]+([A-Za-z0-9 _\-]+)", re.IGNORECASE
+        r"(?:product(?:\s*name)?|item(?:\s*description)?|description)[:\s]+([A-Za-z0-9 _\-\.\(\)\/]+)",
+        re.IGNORECASE,
     ),
     "brand": re.compile(r"(?:brand|make)[:\s]+([A-Za-z0-9 _\-]+)", re.IGNORECASE),
-    "model_number": re.compile(r"(?:model|model no\.?)[:\s]+([A-Za-z0-9 _\-/]+)", re.IGNORECASE),
+    "model_number": re.compile(
+        r"(?:model\s*(?:no\.?|number|#)|model)[:\s]+([A-Za-z0-9 _\-\/]+)",
+        re.IGNORECASE,
+    ),
     "seller": re.compile(
-        r"(?:sold by|seller|vendor|store)[:\s]+([A-Za-z0-9 &.,\-]+)", re.IGNORECASE
+        r"(?:sold\s*by|seller|vendor|store|dealer)[:\s.]+([A-Za-z0-9 &.,\-]+)",
+        re.IGNORECASE,
     ),
     "price": re.compile(
-        r"(?:total|amount|price|mrp)[:\s]*(?:rs\.?|inr|₹)?\s*([\d,]+(?:\.\d{1,2})?)",
+        r"(?:(?:grand\s*total|net\s*amount|total\s*amount|total|amount|price|mrp)[:\s.]*(?:rs\.?|inr|₹)?|(?:rs\.?|inr|₹))\s*([\d,]+(?:\.\d{1,2})?)",
         re.IGNORECASE,
     ),
     "purchase_date": re.compile(
-        r"(?:date|invoice date|bill date)[:\s]+(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})",
+        r"(?:invoice\s*date|bill\s*date|date\s*of\s*invoice|purchase\s*date|date)[:\s.]+(\d{1,2}[/-](?:[A-Za-z]{3,9}|\d{1,2})[/-]\d{2,4}|\d{1,2}\s+(?:[A-Za-z]{3,9})\s+\d{2,4}|\d{4}-\d{2}-\d{2})",
         re.IGNORECASE,
     ),
-    "warranty_months": re.compile(r"(?:warranty)[:\s]+(\d+)\s*(?:month|yr|year)", re.IGNORECASE),
+    "warranty_months": re.compile(
+        r"(?:warranty(?:\s*period)?)[:\s.]+(\d+)\s*(months?|yrs?|years?)",
+        re.IGNORECASE,
+    ),
     "category": re.compile(r"(?:category|type)[:\s]+([A-Za-z0-9 _\-]+)", re.IGNORECASE),
 }
 
@@ -85,9 +93,8 @@ def _regex_extract(text: str) -> ExtractionResult:
                 value = value.replace(",", "")
             # Normalise warranty: convert years to months
             if field == "warranty_months":
-                # check if original match had 'yr' or 'year'
-                orig = m.group(0)
-                if re.search(r"yr|year", orig, re.IGNORECASE):
+                orig = m.group(0).lower()
+                if "yr" in orig or "year" in orig:
                     try:
                         value = str(int(value) * 12)
                     except ValueError:
