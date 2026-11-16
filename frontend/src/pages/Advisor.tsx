@@ -247,7 +247,7 @@ export const Advisor: React.FC = () => {
                 <StatusPill label="SUSTAINABLE" variant="growth" />
               )}
               {capacity?.status === 'blocked' && (
-                <StatusPill label="PAUSED: PRIORITY FIRST" variant="liability" />
+                <StatusPill label="PAUSED (SAFETY FIRST)" variant="liability" />
               )}
               {capacity?.status === 'insufficient_data' && (
                 <StatusPill label="DATA NEEDED" variant="neutral" />

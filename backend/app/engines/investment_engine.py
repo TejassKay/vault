@@ -173,9 +173,9 @@ def compute_investment_capacity(
         steps.append(
             CapacityStep(
                 step_number=6,
-                name="Hard Gate Restriction",
+                name="Safety Priority Hold",
                 value=Decimal("0.00"),
-                description=f"Capacity set to ₹0.00 due to hard gate triggers: {', '.join(reason_codes)}",
+                description=f"New investing paused at ₹0.00 until safety priorities are met: {', '.join(reason_codes)}",
             )
         )
 
