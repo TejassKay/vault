@@ -103,3 +103,37 @@ def test_nfr3_me_authenticated_success(client: TestClient, auth_headers: dict[st
     data = response.json()
     assert data["email"] == "testuser@example.com"
     assert "user_id" in data
+
+
+def test_reset_user_data_clears_ledger_keeps_account(
+    client: TestClient, auth_headers: dict[str, str]
+) -> None:
+    """POST /me/reset clears all ledger records while keeping the user account active."""
+    reset_resp = client.post("/me/reset", headers=auth_headers)
+    assert reset_resp.status_code == 204
+
+    # Account still exists and is authenticated
+    me_resp = client.get("/me", headers=auth_headers)
+    assert me_resp.status_code == 200
+
+    # All ledger collections are now empty
+    assert client.get("/income-sources", headers=auth_headers).json() == []
+    assert client.get("/transactions", headers=auth_headers).json() == []
+    assert client.get("/liabilities", headers=auth_headers).json() == []
+    assert client.get("/holdings", headers=auth_headers).json() == []
+    assert client.get("/goals", headers=auth_headers).json() == []
+
+    # User can immediately add new data after reset
+    add_resp = client.post(
+        "/income-sources",
+        json={
+            "name": "Fresh Salary",
+            "amount": "50000.00",
+            "frequency": "monthly",
+            "income_type": "fixed",
+            "is_active": True,
+        },
+        headers=auth_headers,
+    )
+    assert add_resp.status_code == 201
+    assert len(client.get("/income-sources", headers=auth_headers).json()) == 1
