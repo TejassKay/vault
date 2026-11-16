@@ -564,8 +564,8 @@ export const Advisor: React.FC = () => {
 
       {/* 6. Interactive Risk Questionnaire Modal (FR-22) */}
       {showQuestionnaire && (
-        <div className="fixed inset-0 z-50 bg-ink/40 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-surface border border-ink rounded-sm max-w-2xl w-full max-h-[90vh] flex flex-col">
+        <div className="vault-modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="vault-modal-panel rounded-sm max-w-2xl w-full max-h-[90vh] flex flex-col shadow-xl">
             <div className="p-5 border-b border-border flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-mono uppercase tracking-wider text-muted-ink block">
@@ -627,7 +627,7 @@ export const Advisor: React.FC = () => {
                 <button
                   type="submit"
                   disabled={submittingQuiz}
-                  className="px-4 py-2 bg-ink text-canvas rounded-sm font-mono text-xs hover:bg-muted-ink disabled:opacity-50"
+                  className="vault-modal-submit px-4 py-2 rounded-sm font-mono text-xs disabled:opacity-50"
                 >
                   {submittingQuiz ? 'Scoring...' : 'Save Assessment'}
                 </button>
