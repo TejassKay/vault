@@ -100,6 +100,12 @@ export async function exportUserData(): Promise<Record<string, unknown>> {
   return apiRequest<Record<string, unknown>>('/me/export');
 }
 
+export async function resetUserData(): Promise<void> {
+  await apiRequest<void>('/me/reset', {
+    method: 'POST',
+  });
+}
+
 export async function deleteUserAccount(): Promise<void> {
   await apiRequest<void>('/me', {
     method: 'DELETE',

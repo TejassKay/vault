@@ -304,6 +304,51 @@ def export_user_data(
     }
 
 
+def clear_user_ledger_data(db: Session, user_id: int) -> None:
+    """Delete all ledger records for `user_id` while keeping the User account intact."""
+    from app.models.appliance import Appliance, Service
+    from app.models.bill import Bill
+    from app.models.goal import Goal
+    from app.models.holding import Holding
+    from app.models.income_source import IncomeSource
+    from app.models.liability import Liability
+    from app.models.recommendation import Recommendation
+    from app.models.reminder import Reminder
+    from app.models.risk_profile import RiskProfile
+    from app.models.transaction import Transaction
+
+    db.query(Reminder).filter(Reminder.user_id == user_id).delete(synchronize_session=False)
+    appliance_ids = [
+        a.appliance_id
+        for a in db.query(Appliance.appliance_id).filter(Appliance.user_id == user_id).all()
+    ]
+    if appliance_ids:
+        db.query(Service).filter(Service.appliance_id.in_(appliance_ids)).delete(
+            synchronize_session=False
+        )
+    db.query(Appliance).filter(Appliance.user_id == user_id).delete(synchronize_session=False)
+    db.query(Bill).filter(Bill.user_id == user_id).delete(synchronize_session=False)
+    db.query(Transaction).filter(Transaction.user_id == user_id).delete(synchronize_session=False)
+    db.query(IncomeSource).filter(IncomeSource.user_id == user_id).delete(synchronize_session=False)
+    db.query(Liability).filter(Liability.user_id == user_id).delete(synchronize_session=False)
+    db.query(Holding).filter(Holding.user_id == user_id).delete(synchronize_session=False)
+    db.query(Goal).filter(Goal.user_id == user_id).delete(synchronize_session=False)
+    db.query(RiskProfile).filter(RiskProfile.user_id == user_id).delete(synchronize_session=False)
+    db.query(Recommendation).filter(Recommendation.user_id == user_id).delete(
+        synchronize_session=False
+    )
+
+
+@router.post("/me/reset", status_code=status.HTTP_204_NO_CONTENT)
+def reset_user_data(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> None:
+    """Clear all financial, asset, and advisory records for the current user without deleting the account."""
+    clear_user_ledger_data(db, current_user.user_id)
+    db.commit()
+
+
 @router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)
 def delete_user_account(
     db: Session = Depends(get_db),

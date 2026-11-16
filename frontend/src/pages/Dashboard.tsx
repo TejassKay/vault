@@ -17,6 +17,7 @@ import {
   exportUserData,
   fetchDashboard,
   fetchTimeline,
+  resetUserData,
 } from '../api/dashboard';
 import { fetchInvestmentCapacity, InvestmentCapacity } from '../api/advisor';
 import Money from '../components/Money';
@@ -71,6 +72,22 @@ export const Dashboard: React.FC = () => {
       URL.revokeObjectURL(url);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Export failed');
+    }
+  };
+
+  const handleReset = async () => {
+    if (
+      window.confirm(
+        'Reset all ledger data? Your account will remain active, but all transactions, income sources, liabilities, holdings, goals, appliances, bills, and recommendations will be cleared so you can start fresh.'
+      )
+    ) {
+      try {
+        await resetUserData();
+        await loadAll();
+        setActiveTab('overview');
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Reset failed');
+      }
     }
   };
 
@@ -504,7 +521,7 @@ export const Dashboard: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
             <div className="border border-border rounded-sm p-5 flex flex-col justify-between bg-canvas">
               <div>
                 <Download className="w-5 h-5 text-ink mb-2" />
@@ -520,6 +537,24 @@ export const Dashboard: React.FC = () => {
               >
                 <Download className="w-3.5 h-3.5" />
                 Export Ledger
+              </button>
+            </div>
+
+            <div className="border border-gold/50 bg-gold/5 rounded-sm p-5 flex flex-col justify-between">
+              <div>
+                <RefreshCw className="w-5 h-5 text-ink mb-2" />
+                <h3 className="text-sm font-medium font-sans text-ink">Reset Ledger Data</h3>
+                <p className="text-xs font-sans text-muted-ink mt-1 leading-relaxed">
+                  Clear all financial, asset, and advisory records to make this account blank again.
+                  Your login stays active so you can immediately add new data.
+                </p>
+              </div>
+              <button
+                onClick={handleReset}
+                className="mt-4 py-2 px-4 bg-ink hover:bg-muted-ink text-canvas text-xs font-mono rounded-sm flex items-center justify-center gap-2 transition-colors"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                Reset Data
               </button>
             </div>
 
