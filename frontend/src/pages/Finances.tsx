@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Pencil, Check, X } from 'lucide-react';
 import {
   FinancialSnapshot,
   Holding,
@@ -14,6 +15,10 @@ import {
   fetchLiabilities,
   fetchSnapshot,
   fetchTransactions,
+  updateHolding,
+  updateIncomeSource,
+  updateLiability,
+  updateTransaction,
 } from '../api/finances';
 import Money from '../components/Money';
 import Card from '../components/Card';
@@ -44,7 +49,7 @@ export const Finances: React.FC = () => {
   const [liabType] = useState('personal');
   const [liabLender, setLiabLender] = useState('');
   const [liabPrincipal, setLiabPrincipal] = useState('');
-  const [liabRate] = useState('');
+  const [liabRate, setLiabRate] = useState('');
   const [liabEmi, setLiabEmi] = useState('');
   const [liabDueDay] = useState('5');
 
@@ -53,6 +58,31 @@ export const Finances: React.FC = () => {
   const [holdName, setHoldName] = useState('');
   const [holdValue, setHoldValue] = useState('');
   const [holdReserve, setHoldReserve] = useState(false);
+
+  // Inline Edit states
+  const [editingIncId, setEditingIncId] = useState<number | null>(null);
+  const [editIncName, setEditIncName] = useState('');
+  const [editIncAmount, setEditIncAmount] = useState('');
+  const [editIncFrequency, setEditIncFrequency] = useState('monthly');
+  const [editIncType, setEditIncType] = useState('fixed');
+
+  const [editingTxnId, setEditingTxnId] = useState<number | null>(null);
+  const [editTxnType, setEditTxnType] = useState('expense');
+  const [editTxnAmount, setEditTxnAmount] = useState('');
+  const [editTxnCategory, setEditTxnCategory] = useState('');
+  const [editTxnDate, setEditTxnDate] = useState('');
+
+  const [editingLiabId, setEditingLiabId] = useState<number | null>(null);
+  const [editLiabLender, setEditLiabLender] = useState('');
+  const [editLiabPrincipal, setEditLiabPrincipal] = useState('');
+  const [editLiabRate, setEditLiabRate] = useState('');
+  const [editLiabEmi, setEditLiabEmi] = useState('');
+  const [editLiabDueDay, setEditLiabDueDay] = useState('5');
+
+  const [editingHoldId, setEditingHoldId] = useState<number | null>(null);
+  const [editHoldName, setEditHoldName] = useState('');
+  const [editHoldValue, setEditHoldValue] = useState('');
+  const [editHoldReserve, setEditHoldReserve] = useState(false);
 
   const loadAll = async () => {
     try {
@@ -138,6 +168,7 @@ export const Finances: React.FC = () => {
       });
       setLiabLender('');
       setLiabPrincipal('');
+      setLiabRate('');
       setLiabEmi('');
       await loadAll();
     } catch (err: unknown) {
@@ -161,6 +192,74 @@ export const Finances: React.FC = () => {
       setHoldName('');
       setHoldValue('');
       setHoldReserve(false);
+      await loadAll();
+    } catch (err: unknown) {
+      if (err instanceof Error) setError(err.message);
+    }
+  };
+
+  const saveEditIncome = async (sourceId: number) => {
+    if (!editIncName || !editIncAmount) return;
+    setError(null);
+    try {
+      await updateIncomeSource(sourceId, {
+        name: editIncName,
+        amount: parseFloat(editIncAmount),
+        frequency: editIncFrequency,
+        income_type: editIncType,
+      });
+      setEditingIncId(null);
+      await loadAll();
+    } catch (err: unknown) {
+      if (err instanceof Error) setError(err.message);
+    }
+  };
+
+  const saveEditTxn = async (txnId: number) => {
+    if (!editTxnAmount || !editTxnCategory) return;
+    setError(null);
+    try {
+      await updateTransaction(txnId, {
+        type: editTxnType,
+        amount: parseFloat(editTxnAmount),
+        category: editTxnCategory,
+        txn_date: editTxnDate,
+      });
+      setEditingTxnId(null);
+      await loadAll();
+    } catch (err: unknown) {
+      if (err instanceof Error) setError(err.message);
+    }
+  };
+
+  const saveEditLiability = async (liabilityId: number) => {
+    if (!editLiabPrincipal || !editLiabEmi) return;
+    setError(null);
+    try {
+      await updateLiability(liabilityId, {
+        lender_name: editLiabLender || null,
+        outstanding_principal: parseFloat(editLiabPrincipal),
+        interest_rate: editLiabRate ? parseFloat(editLiabRate) : 0,
+        emi_amount: parseFloat(editLiabEmi),
+        due_day: parseInt(editLiabDueDay, 10),
+      });
+      setEditingLiabId(null);
+      await loadAll();
+    } catch (err: unknown) {
+      if (err instanceof Error) setError(err.message);
+    }
+  };
+
+  const saveEditHolding = async (holdingId: number) => {
+    if (!editHoldName || !editHoldValue) return;
+    setError(null);
+    try {
+      await updateHolding(holdingId, {
+        name: editHoldName,
+        current_value: parseFloat(editHoldValue),
+        is_emergency_reserve: editHoldReserve,
+      });
+      setEditingHoldId(null);
       await loadAll();
     } catch (err: unknown) {
       if (err instanceof Error) setError(err.message);
@@ -336,25 +435,104 @@ export const Finances: React.FC = () => {
                   <th className="p-2.5 font-normal">Source</th>
                   <th className="p-2.5 font-normal">Frequency</th>
                   <th className="p-2.5 font-normal text-right">Amount</th>
+                  <th className="p-2.5 font-normal text-right w-16">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {incomeSources.length === 0 ? (
                   <tr>
-                    <td colSpan={3} className="p-4 text-center text-muted-ink font-sans">
+                    <td colSpan={4} className="p-4 text-center text-muted-ink font-sans">
                       No income sources logged.
                     </td>
                   </tr>
                 ) : (
-                  incomeSources.map((s) => (
-                    <tr key={s.income_source_id} className="hover:bg-surface/50">
-                      <td className="p-2.5 font-sans font-medium text-ink">{s.name}</td>
-                      <td className="p-2.5 font-mono text-[11px] text-muted-ink capitalize">{s.frequency}</td>
-                      <td className="p-2.5 font-mono text-right text-ink">
-                        <Money amount={s.amount} />
-                      </td>
-                    </tr>
-                  ))
+                  incomeSources.map((s) =>
+                    editingIncId === s.income_source_id ? (
+                      <tr key={s.income_source_id} className="bg-surface">
+                        <td className="p-1.5">
+                          <input
+                            type="text"
+                            value={editIncName}
+                            onChange={(e) => setEditIncName(e.target.value)}
+                            className="w-full text-xs font-sans p-1 border border-border rounded-sm bg-canvas"
+                          />
+                        </td>
+                        <td className="p-1.5 flex gap-1">
+                          <select
+                            value={editIncFrequency}
+                            onChange={(e) => setEditIncFrequency(e.target.value)}
+                            className="text-[11px] font-mono p-1 border border-border rounded-sm bg-canvas"
+                          >
+                            <option value="monthly">Monthly</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="yearly">Yearly</option>
+                          </select>
+                          <select
+                            value={editIncType}
+                            onChange={(e) => setEditIncType(e.target.value)}
+                            className="text-[11px] font-mono p-1 border border-border rounded-sm bg-canvas"
+                          >
+                            <option value="fixed">Fixed</option>
+                            <option value="variable">Variable</option>
+                          </select>
+                        </td>
+                        <td className="p-1.5">
+                          <input
+                            type="number"
+                            value={editIncAmount}
+                            onChange={(e) => setEditIncAmount(e.target.value)}
+                            className="w-24 text-right text-xs font-mono p-1 border border-border rounded-sm bg-canvas"
+                          />
+                        </td>
+                        <td className="p-1.5 text-right">
+                          <div className="inline-flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => saveEditIncome(s.income_source_id)}
+                              className="p-1 text-growth hover:opacity-80"
+                              title="Save"
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEditingIncId(null)}
+                              className="p-1 text-muted-ink hover:text-ink"
+                              title="Cancel"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      <tr key={s.income_source_id} className="hover:bg-surface/50">
+                        <td className="p-2.5 font-sans font-medium text-ink">{s.name}</td>
+                        <td className="p-2.5 font-mono text-[11px] text-muted-ink capitalize">
+                          {s.frequency} · {s.income_type}
+                        </td>
+                        <td className="p-2.5 font-mono text-right text-ink">
+                          <Money amount={s.amount} />
+                        </td>
+                        <td className="p-2.5 text-right">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingIncId(s.income_source_id);
+                              setEditIncName(s.name);
+                              setEditIncAmount(String(s.amount));
+                              setEditIncFrequency(s.frequency);
+                              setEditIncType(s.income_type);
+                            }}
+                            className="p-1 text-muted-ink hover:text-ink"
+                            title="Edit income source"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                        </td>
+                      </tr>
+                    )
+                  )
                 )}
               </tbody>
             </table>
@@ -409,34 +587,110 @@ export const Finances: React.FC = () => {
                   <th className="p-2.5 font-normal">Category</th>
                   <th className="p-2.5 font-normal">Type</th>
                   <th className="p-2.5 font-normal text-right">Amount</th>
+                  <th className="p-2.5 font-normal text-right w-16">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {transactions.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="p-4 text-center text-muted-ink font-sans">
+                    <td colSpan={5} className="p-4 text-center text-muted-ink font-sans">
                       No transactions recorded.
                     </td>
                   </tr>
                 ) : (
-                  transactions.slice(0, 10).map((t) => (
-                    <tr key={t.transaction_id} className="hover:bg-surface/50">
-                      <td className="p-2.5 font-mono text-[11px] text-muted-ink">{t.txn_date}</td>
-                      <td className="p-2.5 font-sans font-medium text-ink">{t.category}</td>
-                      <td className="p-2.5">
-                        <StatusPill
-                          label={t.type}
-                          variant={t.type === 'income' ? 'growth' : 'liability'}
-                        />
-                      </td>
-                      <td className="p-2.5 font-mono text-right">
-                        <Money
-                          amount={t.type === 'expense' ? -Math.abs(Number(t.amount)) : Number(t.amount)}
-                          showSign
-                        />
-                      </td>
-                    </tr>
-                  ))
+                  transactions.slice(0, 10).map((t) =>
+                    editingTxnId === t.transaction_id ? (
+                      <tr key={t.transaction_id} className="bg-surface">
+                        <td className="p-1.5">
+                          <input
+                            type="date"
+                            value={editTxnDate}
+                            onChange={(e) => setEditTxnDate(e.target.value)}
+                            className="text-[11px] font-mono p-1 border border-border rounded-sm bg-canvas"
+                          />
+                        </td>
+                        <td className="p-1.5">
+                          <input
+                            type="text"
+                            value={editTxnCategory}
+                            onChange={(e) => setEditTxnCategory(e.target.value)}
+                            className="w-full text-xs font-sans p-1 border border-border rounded-sm bg-canvas"
+                          />
+                        </td>
+                        <td className="p-1.5">
+                          <select
+                            value={editTxnType}
+                            onChange={(e) => setEditTxnType(e.target.value)}
+                            className="text-[11px] font-sans p-1 border border-border rounded-sm bg-canvas"
+                          >
+                            <option value="expense">Expense</option>
+                            <option value="income">Income</option>
+                          </select>
+                        </td>
+                        <td className="p-1.5">
+                          <input
+                            type="number"
+                            value={editTxnAmount}
+                            onChange={(e) => setEditTxnAmount(e.target.value)}
+                            className="w-20 text-right text-xs font-mono p-1 border border-border rounded-sm bg-canvas"
+                          />
+                        </td>
+                        <td className="p-1.5 text-right">
+                          <div className="inline-flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => saveEditTxn(t.transaction_id)}
+                              className="p-1 text-growth hover:opacity-80"
+                              title="Save"
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEditingTxnId(null)}
+                              className="p-1 text-muted-ink hover:text-ink"
+                              title="Cancel"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      <tr key={t.transaction_id} className="hover:bg-surface/50">
+                        <td className="p-2.5 font-mono text-[11px] text-muted-ink">{t.txn_date}</td>
+                        <td className="p-2.5 font-sans font-medium text-ink">{t.category}</td>
+                        <td className="p-2.5">
+                          <StatusPill
+                            label={t.type}
+                            variant={t.type === 'income' ? 'growth' : 'liability'}
+                          />
+                        </td>
+                        <td className="p-2.5 font-mono text-right">
+                          <Money
+                            amount={t.type === 'expense' ? -Math.abs(Number(t.amount)) : Number(t.amount)}
+                            showSign
+                          />
+                        </td>
+                        <td className="p-2.5 text-right">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingTxnId(t.transaction_id);
+                              setEditTxnType(t.type);
+                              setEditTxnAmount(String(t.amount));
+                              setEditTxnCategory(t.category);
+                              setEditTxnDate(t.txn_date);
+                            }}
+                            className="p-1 text-muted-ink hover:text-ink"
+                            title="Edit transaction"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                        </td>
+                      </tr>
+                    )
+                  )
                 )}
               </tbody>
             </table>
@@ -449,7 +703,7 @@ export const Finances: React.FC = () => {
             <h3 className="text-lg font-serif text-ink">Liabilities & EMIs ({liabilities.length})</h3>
           </div>
 
-          <form onSubmit={handleAddLiability} className="grid grid-cols-3 gap-2">
+          <form onSubmit={handleAddLiability} className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <input
               type="text"
               placeholder="Lender / Note"
@@ -467,6 +721,16 @@ export const Finances: React.FC = () => {
             />
             <input
               type="number"
+              step="0.01"
+              min="0"
+              placeholder="Interest % (APR)"
+              value={liabRate}
+              onChange={(e) => setLiabRate(e.target.value)}
+              className="text-xs font-mono p-2 border border-border rounded-sm bg-surface focus:border-ink"
+              required
+            />
+            <input
+              type="number"
               placeholder="EMI (₹)"
               value={liabEmi}
               onChange={(e) => setLiabEmi(e.target.value)}
@@ -475,7 +739,7 @@ export const Finances: React.FC = () => {
             />
             <button
               type="submit"
-              className="col-span-3 py-1.5 bg-ink hover:bg-muted-ink text-canvas rounded-sm text-xs font-mono transition-colors"
+              className="col-span-2 sm:col-span-4 py-1.5 bg-ink hover:bg-muted-ink text-canvas rounded-sm text-xs font-mono transition-colors"
             >
               Log Liability
             </button>
@@ -488,35 +752,126 @@ export const Finances: React.FC = () => {
                 <tr className="border-b border-border bg-surface text-[10px] font-mono text-muted-ink uppercase">
                   <th className="p-2.5 font-normal">Lender / Type</th>
                   <th className="p-2.5 font-normal">Due Day</th>
+                  <th className="p-2.5 font-normal text-right">APR</th>
                   <th className="p-2.5 font-normal text-right">Principal</th>
                   <th className="p-2.5 font-normal text-right">EMI</th>
+                  <th className="p-2.5 font-normal text-right w-16">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {liabilities.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="p-4 text-center text-muted-ink font-sans">
+                    <td colSpan={6} className="p-4 text-center text-muted-ink font-sans">
                       No liabilities logged.
                     </td>
                   </tr>
                 ) : (
-                  liabilities.map((l) => (
-                    <tr key={l.liability_id} className="hover:bg-surface/50">
-                      <td className="p-2.5 font-sans font-medium text-ink">
-                        {l.lender_name || l.type}
-                      </td>
-                      <td className="p-2.5 font-mono text-[11px] text-muted-ink">Day {l.due_day}</td>
-                      <td className="p-2.5 font-mono text-right text-liability">
-                        <Money amount={l.outstanding_principal} />
-                      </td>
-                      <td className="p-2.5 font-mono text-right font-medium text-liability">
-                        <span className="inline-flex items-center gap-1.5">
-                          <StatusPill label="EMI" variant="liability" />
-                          <Money amount={l.emi_amount} />
-                        </span>
-                      </td>
-                    </tr>
-                  ))
+                  liabilities.map((l) =>
+                    editingLiabId === l.liability_id ? (
+                      <tr key={l.liability_id} className="bg-surface">
+                        <td className="p-1.5">
+                          <input
+                            type="text"
+                            value={editLiabLender}
+                            onChange={(e) => setEditLiabLender(e.target.value)}
+                            className="w-full text-xs font-sans p-1 border border-border rounded-sm bg-canvas"
+                          />
+                        </td>
+                        <td className="p-1.5">
+                          <input
+                            type="number"
+                            min="1"
+                            max="31"
+                            value={editLiabDueDay}
+                            onChange={(e) => setEditLiabDueDay(e.target.value)}
+                            className="w-12 text-xs font-mono p-1 border border-border rounded-sm bg-canvas"
+                          />
+                        </td>
+                        <td className="p-1.5">
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={editLiabRate}
+                            onChange={(e) => setEditLiabRate(e.target.value)}
+                            className="w-16 text-right text-xs font-mono p-1 border border-border rounded-sm bg-canvas"
+                          />
+                        </td>
+                        <td className="p-1.5">
+                          <input
+                            type="number"
+                            value={editLiabPrincipal}
+                            onChange={(e) => setEditLiabPrincipal(e.target.value)}
+                            className="w-24 text-right text-xs font-mono p-1 border border-border rounded-sm bg-canvas"
+                          />
+                        </td>
+                        <td className="p-1.5">
+                          <input
+                            type="number"
+                            value={editLiabEmi}
+                            onChange={(e) => setEditLiabEmi(e.target.value)}
+                            className="w-20 text-right text-xs font-mono p-1 border border-border rounded-sm bg-canvas"
+                          />
+                        </td>
+                        <td className="p-1.5 text-right">
+                          <div className="inline-flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => saveEditLiability(l.liability_id)}
+                              className="p-1 text-growth hover:opacity-80"
+                              title="Save"
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEditingLiabId(null)}
+                              className="p-1 text-muted-ink hover:text-ink"
+                              title="Cancel"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      <tr key={l.liability_id} className="hover:bg-surface/50">
+                        <td className="p-2.5 font-sans font-medium text-ink">
+                          {l.lender_name || l.type}
+                        </td>
+                        <td className="p-2.5 font-mono text-[11px] text-muted-ink">Day {l.due_day}</td>
+                        <td className="p-2.5 font-mono text-right text-[11px] text-muted-ink">
+                          {Number(l.interest_rate).toFixed(2)}%
+                        </td>
+                        <td className="p-2.5 font-mono text-right text-liability">
+                          <Money amount={l.outstanding_principal} />
+                        </td>
+                        <td className="p-2.5 font-mono text-right font-medium text-liability">
+                          <span className="inline-flex items-center gap-1.5">
+                            <StatusPill label="EMI" variant="liability" />
+                            <Money amount={l.emi_amount} />
+                          </span>
+                        </td>
+                        <td className="p-2.5 text-right">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingLiabId(l.liability_id);
+                              setEditLiabLender(l.lender_name || '');
+                              setEditLiabPrincipal(String(l.outstanding_principal));
+                              setEditLiabRate(String(l.interest_rate));
+                              setEditLiabEmi(String(l.emi_amount));
+                              setEditLiabDueDay(String(l.due_day));
+                            }}
+                            className="p-1 text-muted-ink hover:text-ink"
+                            title="Edit liability"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                        </td>
+                      </tr>
+                    )
+                  )
                 )}
               </tbody>
             </table>
@@ -571,31 +926,99 @@ export const Finances: React.FC = () => {
                   <th className="p-2.5 font-normal">Holding</th>
                   <th className="p-2.5 font-normal">Role</th>
                   <th className="p-2.5 font-normal text-right">Current Value</th>
+                  <th className="p-2.5 font-normal text-right w-16">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {holdings.length === 0 ? (
                   <tr>
-                    <td colSpan={3} className="p-4 text-center text-muted-ink font-sans">
+                    <td colSpan={4} className="p-4 text-center text-muted-ink font-sans">
                       No holdings logged.
                     </td>
                   </tr>
                 ) : (
-                  holdings.map((h) => (
-                    <tr key={h.holding_id} className="hover:bg-surface/50">
-                      <td className="p-2.5 font-sans font-medium text-ink">{h.name}</td>
-                      <td className="p-2.5">
-                        {h.is_emergency_reserve ? (
-                          <StatusPill label="RESERVE" variant="growth" />
-                        ) : (
-                          <span className="text-[11px] font-mono text-muted-ink">General</span>
-                        )}
-                      </td>
-                      <td className="p-2.5 font-mono text-right text-ink font-medium">
-                        <Money amount={h.current_value} />
-                      </td>
-                    </tr>
-                  ))
+                  holdings.map((h) =>
+                    editingHoldId === h.holding_id ? (
+                      <tr key={h.holding_id} className="bg-surface">
+                        <td className="p-1.5">
+                          <input
+                            type="text"
+                            value={editHoldName}
+                            onChange={(e) => setEditHoldName(e.target.value)}
+                            className="w-full text-xs font-sans p-1 border border-border rounded-sm bg-canvas"
+                          />
+                        </td>
+                        <td className="p-1.5">
+                          <label className="inline-flex items-center gap-1 text-[11px] font-sans text-muted-ink">
+                            <input
+                              type="checkbox"
+                              checked={editHoldReserve}
+                              onChange={(e) => setEditHoldReserve(e.target.checked)}
+                              className="rounded-xs border-border"
+                            />
+                            Reserve
+                          </label>
+                        </td>
+                        <td className="p-1.5">
+                          <input
+                            type="number"
+                            value={editHoldValue}
+                            onChange={(e) => setEditHoldValue(e.target.value)}
+                            className="w-24 text-right text-xs font-mono p-1 border border-border rounded-sm bg-canvas"
+                          />
+                        </td>
+                        <td className="p-1.5 text-right">
+                          <div className="inline-flex items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => saveEditHolding(h.holding_id)}
+                              className="p-1 text-growth hover:opacity-80"
+                              title="Save"
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEditingHoldId(null)}
+                              className="p-1 text-muted-ink hover:text-ink"
+                              title="Cancel"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      <tr key={h.holding_id} className="hover:bg-surface/50">
+                        <td className="p-2.5 font-sans font-medium text-ink">{h.name}</td>
+                        <td className="p-2.5">
+                          {h.is_emergency_reserve ? (
+                            <StatusPill label="RESERVE" variant="growth" />
+                          ) : (
+                            <span className="text-[11px] font-mono text-muted-ink">General</span>
+                          )}
+                        </td>
+                        <td className="p-2.5 font-mono text-right text-ink font-medium">
+                          <Money amount={h.current_value} />
+                        </td>
+                        <td className="p-2.5 text-right">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingHoldId(h.holding_id);
+                              setEditHoldName(h.name);
+                              setEditHoldValue(String(h.current_value));
+                              setEditHoldReserve(h.is_emergency_reserve);
+                            }}
+                            className="p-1 text-muted-ink hover:text-ink"
+                            title="Edit holding"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                        </td>
+                      </tr>
+                    )
+                  )
                 )}
               </tbody>
             </table>
