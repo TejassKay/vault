@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routers import (
     advisor,
+    analytics,
     appliances,
     auth,
     bills,
@@ -50,6 +51,8 @@ app.include_router(advisor.router)
 app.include_router(advisor.router, prefix=settings.API_V1_STR)
 app.include_router(dashboard.router)
 app.include_router(dashboard.router, prefix=settings.API_V1_STR)
+app.include_router(analytics.router)
+app.include_router(analytics.router, prefix=settings.API_V1_STR)
 
 
 @app.get("/")
