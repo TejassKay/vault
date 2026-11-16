@@ -6,6 +6,7 @@ import {
   Compass,
   Receipt,
   WalletCards,
+  BarChart3,
   Target,
   Sparkles,
   Activity,
@@ -83,6 +84,17 @@ export const CommandBar: React.FC<CommandBarProps> = ({ isOpen, onClose }) => {
       hint: 'Income, transactions, liabilities & holdings',
       action: () => {
         navigate('/finances');
+        onClose();
+      },
+    },
+    {
+      id: 'page-insights',
+      title: 'Spending Insights',
+      category: 'Pages',
+      icon: BarChart3,
+      hint: 'Category breakdown, pace & net worth composition',
+      action: () => {
+        navigate('/insights');
         onClose();
       },
     },

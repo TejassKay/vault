@@ -43,6 +43,41 @@ export const CODE_LABELS = {
   liquid: 'Emergency Reserve',
   semi_liquid: 'Investment',
   illiquid: 'Locked Asset',
+
+  // Holding & liability types
+  bank_savings: 'Bank Savings',
+  fixed_deposit: 'Fixed Deposit',
+  mutual_fund: 'Mutual Funds',
+  stocks: 'Stocks',
+  bonds: 'Bonds',
+  gold: 'Gold',
+  retirement: 'Retirement',
+  credit_card: 'Credit Card',
+  home: 'Home Loan',
+  vehicle: 'Vehicle Loan',
+  education: 'Education Loan',
+  personal: 'Personal Loan',
+  other: 'Other',
+};
+
+export const INSIGHTS_LABELS = {
+  pageTitle: 'Spending Insights',
+  pageSubtitle: 'Understand where your money goes, how your pace compares, and what shapes your net worth.',
+  viewAsTable: 'View as table',
+  emptyTitle: 'No financial activity yet',
+  emptyDescription: 'Add your transactions, holdings, or liabilities in Finances to see your spending insights here.',
+  emptyCta: 'Go to Finances',
+  errorTitle: 'Could not load insights',
+  retry: 'Retry',
+  downloadCsv: 'Download CSV',
+  charts: {
+    categoryBreakdown: 'Spending by category',
+    incomeVsExpenses: 'Income versus expenses',
+    essentialVsDiscretionary: 'Essential versus discretionary',
+    spendingPace: 'Spending pace',
+    categoryChanges: 'Category changes',
+    netWorthComposition: 'Net worth composition',
+  },
 };
 
 /**
