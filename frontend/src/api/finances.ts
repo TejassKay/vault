@@ -109,6 +109,14 @@ export async function createTransaction(data: Omit<Transaction, 'transaction_id'
   });
 }
 
+export async function updateTransaction(txnId: number, data: Partial<Omit<Transaction, 'transaction_id' | 'user_id'>>): Promise<Transaction> {
+  return apiRequest(`/transactions/${txnId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+}
+
 export async function fetchIncomeSources(): Promise<IncomeSource[]> {
   return apiRequest<IncomeSource[]>('/income-sources');
 }
@@ -116,6 +124,14 @@ export async function fetchIncomeSources(): Promise<IncomeSource[]> {
 export async function createIncomeSource(data: Omit<IncomeSource, 'income_source_id' | 'user_id'>): Promise<IncomeSource> {
   return apiRequest('/income-sources', {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateIncomeSource(sourceId: number, data: Partial<Omit<IncomeSource, 'income_source_id' | 'user_id'>>): Promise<IncomeSource> {
+  return apiRequest(`/income-sources/${sourceId}`, {
+    method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
@@ -139,6 +155,14 @@ export async function createLiability(data: Omit<Liability, 'liability_id' | 'us
   });
 }
 
+export async function updateLiability(liabilityId: number, data: Partial<Omit<Liability, 'liability_id' | 'user_id'>>): Promise<Liability> {
+  return apiRequest(`/liabilities/${liabilityId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+}
+
 export async function fetchHoldings(): Promise<Holding[]> {
   return apiRequest<Holding[]>('/holdings');
 }
@@ -146,6 +170,14 @@ export async function fetchHoldings(): Promise<Holding[]> {
 export async function createHolding(data: Omit<Holding, 'holding_id' | 'user_id'>): Promise<Holding> {
   return apiRequest('/holdings', {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateHolding(holdingId: number, data: Partial<Omit<Holding, 'holding_id' | 'user_id'>>): Promise<Holding> {
+  return apiRequest(`/holdings/${holdingId}`, {
+    method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });

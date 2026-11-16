@@ -26,17 +26,31 @@ from app.schemas.finance import (
     FinancialSnapshotResponse,
     HoldingCreate,
     HoldingResponse,
+    HoldingUpdate,
     IncomeSourceCreate,
     IncomeSourceResponse,
+    IncomeSourceUpdate,
     LiabilityCreate,
     LiabilityResponse,
+    LiabilityUpdate,
     TransactionCreate,
     TransactionPostResponse,
     TransactionResponse,
+    TransactionUpdate,
 )
 from app.services.reminder_service import create_liability_reminders
 
 router = APIRouter(tags=["finance"])
+
+
+def _apply_partial_update(db: Session, record: object, data: object) -> object:
+    """Apply unset-excluded Pydantic update fields onto a SQLAlchemy model and commit."""
+    updates = data.model_dump(exclude_unset=True)  # type: ignore[attr-defined]
+    for field, value in updates.items():
+        setattr(record, field, value)
+    db.commit()
+    db.refresh(record)
+    return record
 
 
 # ---------------------------------------------------------------------------
@@ -138,6 +152,27 @@ def list_transactions(
     return [TransactionResponse.model_validate(t) for t in txns]
 
 
+@router.patch("/transactions/{txn_id}", response_model=TransactionResponse)
+def update_transaction(
+    txn_id: int,
+    data: TransactionUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> TransactionResponse:
+    txn = (
+        db.query(Transaction)
+        .filter(
+            Transaction.transaction_id == txn_id,
+            Transaction.user_id == current_user.user_id,
+        )
+        .first()
+    )
+    if not txn:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transaction not found.")
+    _apply_partial_update(db, txn, data)
+    return TransactionResponse.model_validate(txn)
+
+
 @router.delete("/transactions/{txn_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_transaction(
     txn_id: int,
@@ -193,6 +228,29 @@ def list_income_sources(
 ) -> list[IncomeSourceResponse]:
     sources = db.query(IncomeSource).filter(IncomeSource.user_id == current_user.user_id).all()
     return [IncomeSourceResponse.model_validate(s) for s in sources]
+
+
+@router.patch("/income-sources/{source_id}", response_model=IncomeSourceResponse)
+def update_income_source(
+    source_id: int,
+    data: IncomeSourceUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> IncomeSourceResponse:
+    source = (
+        db.query(IncomeSource)
+        .filter(
+            IncomeSource.income_source_id == source_id,
+            IncomeSource.user_id == current_user.user_id,
+        )
+        .first()
+    )
+    if not source:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Income source not found."
+        )
+    _apply_partial_update(db, source, data)
+    return IncomeSourceResponse.model_validate(source)
 
 
 @router.delete("/income-sources/{source_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -260,6 +318,27 @@ def list_liabilities(
     return [LiabilityResponse.model_validate(item) for item in liabs]
 
 
+@router.patch("/liabilities/{liability_id}", response_model=LiabilityResponse)
+def update_liability(
+    liability_id: int,
+    data: LiabilityUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> LiabilityResponse:
+    liab = (
+        db.query(Liability)
+        .filter(
+            Liability.liability_id == liability_id,
+            Liability.user_id == current_user.user_id,
+        )
+        .first()
+    )
+    if not liab:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Liability not found.")
+    _apply_partial_update(db, liab, data)
+    return LiabilityResponse.model_validate(liab)
+
+
 @router.delete("/liabilities/{liability_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_liability(
     liability_id: int,
@@ -314,6 +393,27 @@ def list_holdings(
 ) -> list[HoldingResponse]:
     holdings = db.query(Holding).filter(Holding.user_id == current_user.user_id).all()
     return [HoldingResponse.model_validate(h) for h in holdings]
+
+
+@router.patch("/holdings/{holding_id}", response_model=HoldingResponse)
+def update_holding(
+    holding_id: int,
+    data: HoldingUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+) -> HoldingResponse:
+    holding = (
+        db.query(Holding)
+        .filter(
+            Holding.holding_id == holding_id,
+            Holding.user_id == current_user.user_id,
+        )
+        .first()
+    )
+    if not holding:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Holding not found.")
+    _apply_partial_update(db, holding, data)
+    return HoldingResponse.model_validate(holding)
 
 
 @router.delete("/holdings/{holding_id}", status_code=status.HTTP_204_NO_CONTENT)

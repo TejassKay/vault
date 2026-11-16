@@ -126,3 +126,90 @@ def test_fr9_goals_and_projection(client: TestClient, auth_headers: dict[str, st
     assert "planning_contribution" in data
     assert "scenarios" in data
     assert data["disclaimer"] == "Projections are estimates and are not guaranteed."
+
+
+def test_patch_finance_records(client: TestClient, auth_headers: dict[str, str]) -> None:
+    """Verify PATCH endpoints for income sources, transactions, liabilities, and holdings."""
+    inc_id = client.post(
+        "/income-sources",
+        json={
+            "name": "Consulting",
+            "amount": "20000.00",
+            "frequency": "monthly",
+            "income_type": "variable",
+            "is_active": True,
+        },
+        headers=auth_headers,
+    ).json()["income_source_id"]
+    inc_upd = client.patch(
+        f"/income-sources/{inc_id}",
+        json={"name": "Retainer", "amount": "25000.00"},
+        headers=auth_headers,
+    )
+    assert inc_upd.status_code == 200
+    assert inc_upd.json()["name"] == "Retainer"
+    assert Decimal(str(inc_upd.json()["amount"])) == Decimal("25000.00")
+
+    txn_id = client.post(
+        "/transactions",
+        json={
+            "type": "expense",
+            "amount": "1200.00",
+            "category": "Groceries",
+            "txn_date": date.today().isoformat(),
+            "is_recurring": False,
+        },
+        headers=auth_headers,
+    ).json()["transaction"]["transaction_id"]
+    txn_upd = client.patch(
+        f"/transactions/{txn_id}",
+        json={"amount": "1500.00", "category": "Utilities"},
+        headers=auth_headers,
+    )
+    assert txn_upd.status_code == 200
+    assert txn_upd.json()["category"] == "Utilities"
+    assert Decimal(str(txn_upd.json()["amount"])) == Decimal("1500.00")
+
+    liab_id = client.post(
+        "/liabilities",
+        json={
+            "type": "personal",
+            "lender_name": "Test Bank",
+            "outstanding_principal": "100000.00",
+            "interest_rate": "10.00",
+            "emi_amount": "5000.00",
+            "due_day": 5,
+            "status": "active",
+        },
+        headers=auth_headers,
+    ).json()["liability_id"]
+    liab_upd = client.patch(
+        f"/liabilities/{liab_id}",
+        json={"interest_rate": "11.50", "emi_amount": "5500.00"},
+        headers=auth_headers,
+    )
+    assert liab_upd.status_code == 200
+    assert Decimal(str(liab_upd.json()["interest_rate"])) == Decimal("11.50")
+    assert Decimal(str(liab_upd.json()["emi_amount"])) == Decimal("5500.00")
+
+    hold_id = client.post(
+        "/holdings",
+        json={
+            "type": "bank_savings",
+            "name": "Savings",
+            "current_value": "50000.00",
+            "as_of_date": date.today().isoformat(),
+            "liquidity": "liquid",
+            "is_emergency_reserve": False,
+            "source": "manual",
+        },
+        headers=auth_headers,
+    ).json()["holding_id"]
+    hold_upd = client.patch(
+        f"/holdings/{hold_id}",
+        json={"current_value": "75000.00", "is_emergency_reserve": True},
+        headers=auth_headers,
+    )
+    assert hold_upd.status_code == 200
+    assert Decimal(str(hold_upd.json()["current_value"])) == Decimal("75000.00")
+    assert hold_upd.json()["is_emergency_reserve"] is True
