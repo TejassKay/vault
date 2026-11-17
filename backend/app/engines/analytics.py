@@ -302,7 +302,9 @@ def compute_analytics_summary(
     for m_start in window_months:
         ym = _ym_str(m_start)
         cat_map = month_cat_maps[ym]
-        totals: dict[str, Decimal] = {cat: round_cur(cat_map.get(cat, Decimal("0"))) for cat in top_5}
+        totals: dict[str, Decimal] = {
+            cat: round_cur(cat_map.get(cat, Decimal("0"))) for cat in top_5
+        }
         if has_other:
             other_sum = sum(
                 (amt for cat, amt in cat_map.items() if cat not in top_5),
@@ -315,10 +317,7 @@ def compute_analytics_summary(
     # 4. Spending pace: cumulative spending by day for selected month vs previous month
     days_in_sel = calendar.monthrange(selected_month_start.year, selected_month_start.month)[1]
     days_in_prev = calendar.monthrange(prev_month_start.year, prev_month_start.month)[1]
-    if (
-        selected_month_start.year == today.year
-        and selected_month_start.month == today.month
-    ):
+    if selected_month_start.year == today.year and selected_month_start.month == today.month:
         sel_max_day = min(today.day, days_in_sel)
     else:
         sel_max_day = days_in_sel
@@ -337,8 +336,12 @@ def compute_analytics_summary(
     )
 
     comparison_day = min(sel_max_day, days_in_prev)
-    curr_at_day = curr_pace[comparison_day - 1].cumulative if comparison_day >= 1 else Decimal("0.00")
-    prev_at_day = prev_pace[comparison_day - 1].cumulative if comparison_day >= 1 else Decimal("0.00")
+    curr_at_day = (
+        curr_pace[comparison_day - 1].cumulative if comparison_day >= 1 else Decimal("0.00")
+    )
+    prev_at_day = (
+        prev_pace[comparison_day - 1].cumulative if comparison_day >= 1 else Decimal("0.00")
+    )
     delta_at_day = round_cur(curr_at_day - prev_at_day)
 
     spending_pace = SpendingPace(
