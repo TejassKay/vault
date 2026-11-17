@@ -95,7 +95,7 @@ def _extract_pdf(file_path: str) -> tuple[str, bool]:
             if len(text) < 30:
                 ocr_pages = []
                 for page in pdf.pages:
-                    page_img = page.to_image(resolution=200).original
+                    page_img = page.to_image(resolution=300).original
                     page_text = ocr_image(page_img)
                     if page_text:
                         ocr_pages.append(page_text)
