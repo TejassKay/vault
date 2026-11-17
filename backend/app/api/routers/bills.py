@@ -36,7 +36,7 @@ def _get_file_type(content_type: str, filename: str) -> str:
     if ext in ("pdf", "jpg", "jpeg", "png"):
         return "jpg" if ext == "jpeg" else ext
     raise HTTPException(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
         detail="File must be PDF, JPG, or PNG.",
     )
 
@@ -55,7 +55,7 @@ async def upload_bill(
     contents = await file.read()
     if len(contents) > MAX_FILE_SIZE:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="File must be 10 MB or less.",
         )
 
